@@ -5,6 +5,13 @@
   become: yes
   become_user: root
   tasks:
+    - name: validate vars
+      fail:
+        msg: "{{ item }} must be defined!"
+      when: lookup('vars', item) is undefined
+      loop:
+        - emqx_script_result_file
+
     - name: fetch
       fetch:
         src: "/tmp/{{ emqx_script_result_file }}"
@@ -14,18 +21,6 @@
 - name: test
   hosts: localhost
   tasks:
-    - ping:
-        data: pong
-    # - name: set glob
-    #   find:
-    #     paths: '../{{ emqx_script_result_file }}/'
-    #     patterns: '^loadgen-[0-9]+$'
-    #     use_regex: True
-    #   register: script_files
-    # - name: go
-    #   debug:
-    #     var: "{{ item }}"
-    #   loop: "{{ script_files.files }}"
     - name: compress
       archive:
         path:

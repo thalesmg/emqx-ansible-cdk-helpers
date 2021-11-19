@@ -1,0 +1,56 @@
+---
+
+- name: run and record tests
+  hosts: loadgen
+  become: yes
+  become_user: root
+  force_handlers: True
+  # strategy: free
+  # max_fail_percentage: 0
+  tasks:
+    - name: ensure vars are defined
+      fail:
+        msg: "{{ item }} must be defined!"
+      when: lookup('vars', item) is undefined
+      loop:
+        - emqx_script_result_file
+        - emqx_bastion_server
+    - name: copy script
+      copy:
+        src: connection-test.sh
+        dest: /root/emqtt-bench/
+        mode: '0777'
+    - name: set variables
+      set_fact:
+        lg_num: "{{ inventory_hostname_short | regex_search('[0-9]+') }}"
+    - name: run
+      shell: |
+        cd /root/emqtt-bench/
+        nohup ./connection-test.sh {{ lg_num }} {{ emqx_script_result_file }} >/dev/null &
+        echo $!
+      register: test_runner
+    # - debug:
+    #     var: test_runner
+    - name: give the script some time...
+      pause:
+        seconds: "{{ script_timeout_s | default('300') }}"
+    - name: kill the script
+      shell: "kill -9 $(ps -o pid= --ppid {{ test_runner.stdout }})"
+    - name: fetch output
+      fetch:
+        src: "/tmp/{{ emqx_script_result_file }}"
+        dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}"
+        flat: yes
+
+- name: test
+  hosts: localhost
+  tasks:
+    - name: compress
+      archive:
+        path:
+          - './tmp/data/{{ emqx_script_result_file }}/*'
+        dest: "./tmp/data/{{ emqx_script_result_file }}.tar.bz2"
+        remove: yes
+        format: bz2
+
+...
