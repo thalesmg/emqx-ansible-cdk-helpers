@@ -1,0 +1,19 @@
+---
+
+- name: apply tuning to emqx
+  hosts: emqx
+  become: yes
+  become_user: root
+  tasks:
+    - name: set kernel parameters
+      script: ./files/tuning-emqx.sh
+
+- name: apply tuning to loadgen
+  hosts: loadgen
+  become: yes
+  become_user: root
+  tasks:
+    - name: set kernel parameters
+      script: ./files/tuning-loadgen.sh
+
+...

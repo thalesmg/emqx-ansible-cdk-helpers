@@ -1,0 +1,6 @@
+---
+
+# ansible_ssh_common_args: '-o ProxyCommand="ssh ec2-user@{{ emqx_bastion_server }} -q -W %h:%p"'
+ansible_ssh_common_args: '-J ec2-user@{{ emqx_bastion_server }}'
+
+...

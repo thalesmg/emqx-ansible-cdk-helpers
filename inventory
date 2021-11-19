@@ -1,0 +1,11 @@
+# -*- mode: yaml; -*-
+all:
+  children:
+    emqx:
+      hosts:
+        emqx-[0:1].int.thalesmg:
+          ansible_user: ubuntu
+    loadgen:
+      hosts:
+        loadgen-[0:11].int.thalesmg:
+          ansible_user: ubuntu

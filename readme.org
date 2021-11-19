@@ -1,0 +1,5 @@
+* tuning
+
+#+BEGIN_SRC sh
+  ansible-playbook -i inventory -e emqx_bastion_server=$EMQX_BASTION_IP tuning.yml
+#+END_SRC

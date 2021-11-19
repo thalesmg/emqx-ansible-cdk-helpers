@@ -1,0 +1,38 @@
+---
+
+- name: fetch script results from loadgens
+  hosts: loadgen
+  become: yes
+  become_user: root
+  tasks:
+    - name: fetch
+      fetch:
+        dest: "../{{ emqx_script_result_file }}/{{ inventory_hostname_short }}"
+        src: "/tmp/{{ emqx_script_result_file }}"
+        flat: yes
+
+- name: test
+  hosts: localhost
+  tasks:
+    - ping:
+        data: pong
+    # - name: set glob
+    #   find:
+    #     paths: '../{{ emqx_script_result_file }}/'
+    #     patterns: '^loadgen-[0-9]+$'
+    #     use_regex: True
+    #   register: script_files
+    # - name: go
+    #   debug:
+    #     var: "{{ item }}"
+    #   loop: "{{ script_files.files }}"
+    - name: compress
+      archive:
+        path:
+          - '../{{ emqx_script_result_file }}/*'
+        dest: "../{{ emqx_script_result_file }}.tar.bz2"
+        remove: yes
+        format: bz2
+
+
+...
