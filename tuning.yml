@@ -49,10 +49,15 @@
         - name: set facts
           set_fact:
             emqx_db_role: "{{ 'core' if inventory_hostname in cores else 'replicant' }}"
-        - name: set cluster-overrides.conf
+        - debug:
+            var: "{{ item }}"
+          loop:
+            - cores
+            - replicants
+        - name: set cluster-override.conf
           template:
-            src: cluster-overrides.conf
-            dest: /etc/emqx/cluster-overrides.conf
+            src: cluster-override.conf
+            dest: /etc/emqx/cluster-override.conf
         - name: restart emqx
           systemd:
             name: emqx
