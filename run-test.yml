@@ -1,0 +1,101 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: ensure vars are defined
+      fail:
+        msg: "{{ item }} must be defined!"
+      when: lookup('vars', item) is undefined
+      loop:
+        - emqx_cluster_name
+        - emqx_emqx_num
+        - emqx_loadgen_num
+    - name: create groups and hosts (emqx)
+      add_host:
+        name: "emqx-{{ item }}.int.{{ emqx_cluster_name }}"
+        group: emqx
+        ansible_user: ubuntu
+      loop: "{{ range(0, emqx_emqx_num | int) | list }}"
+    - name: create groups and hosts (loadgen)
+      add_host:
+        name: "loadgen-{{ item }}.int.{{ emqx_cluster_name }}"
+        group: loadgen
+        ansible_user: ubuntu
+      loop: "{{ range(0, emqx_loadgen_num | int) | list }}"
+
+- name: check inputs
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: ensure vars are defined
+      fail:
+        msg: "{{ item }} must be defined!"
+      when: lookup('vars', item) is undefined
+      loop:
+        - emqx_script_result_file
+        - emqx_bastion_server
+        - emqx_test_script_file
+    - name: ensure test exists
+      # delegate_to: localhost
+      stat:
+        path: "files/{{ emqx_test_script_file }}"
+      register: script_file_stat
+    - name: ensure test exists
+      fail:
+        msg: "test script {{ emqx_test_script_file }} does not exist!"
+      when: not script_file_stat.stat.exists
+    - debug:
+        msg: |
+          script: {{ emqx_test_script_file }}
+
+- name: run and record tests
+  hosts: loadgen
+  become: yes
+  become_user: root
+  force_handlers: True
+  # strategy: free
+  # max_fail_percentage: 0
+  tasks:
+    - name: copy script
+      copy:
+        src: "{{ emqx_test_script_file }}"
+        dest: /root/emqtt-bench/
+        mode: '0777'
+    - name: set variables
+      set_fact:
+        lg_num: "{{ inventory_hostname_short | regex_search('[0-9]+') }}"
+    - name: run
+      shell: |
+        cd /root/emqtt-bench/
+        nohup timeout {{ timeout }}s ./{{ emqx_test_script_file }} {{ lg_num }} {{ emqx_script_result_file }} >/dev/null &
+        echo $!
+      register: test_runner
+      vars:
+        timeout: "{{ script_timeout_s | default('300') }}"
+    # - debug:
+    #     var: test_runner
+    - name: give the script some time...
+      pause:
+        seconds: "{{ script_timeout_s | default('300') }}"
+    - name: kill the script
+      shell: "kill -9 $(ps -o pid= --ppid {{ test_runner.stdout }})"
+    - name: fetch output
+      fetch:
+        src: "/tmp/{{ emqx_script_result_file }}"
+        dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}"
+        flat: yes
+
+- name: test
+  hosts: localhost
+  tasks:
+    - name: compress
+      archive:
+        path:
+          - './tmp/data/{{ emqx_script_result_file }}/*'
+        dest: "./tmp/data/{{ emqx_script_result_file }}.tar.bz2"
+        remove: yes
+        format: bz2
+
+...
