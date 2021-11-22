@@ -68,7 +68,7 @@
     - name: set variables
       set_fact:
         lg_num: "{{ inventory_hostname_short | regex_search('[0-9]+') }}"
-    - name: run
+    - name: release the krakens
       shell: |
         cd /root/emqtt-bench/
         nohup timeout {{ timeout }}s ./{{ emqx_test_script_file }} {{ lg_num }} {{ emqx_script_result_file }} >/dev/null &
