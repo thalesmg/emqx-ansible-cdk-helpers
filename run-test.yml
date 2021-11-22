@@ -81,8 +81,11 @@
     - name: give the script some time...
       pause:
         seconds: "{{ script_timeout_s | default('300') }}"
-    - name: kill the script
+    - name: kill the krakens
       shell: "kill -9 $(ps -o pid= --ppid {{ test_runner.stdout }})"
+      ignore_errors: yes
+    - name: REALLY kill the krakens
+      shell: "ps -ef | grep bench | grep -v grep | awk '{print $2}' | xargs kill -9"
       ignore_errors: yes
     - name: fetch output
       tags: [collect]

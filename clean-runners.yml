@@ -32,11 +32,11 @@
   become_user: root
   tasks:
     - name: show offenders
-      shell: "ps -ef | grep bench"
+      shell: "ps -ef | grep bench | grep -v grep"
       register: offenders
     - debug:
         var: offenders.stdout_lines
     - name: kill the krakens
-      shell: "ps -ef | grep bench | awk '{print $2}' | xargs kill -9"
+      shell: "ps -ef | grep bench | grep -v grep | awk '{print $2}' | xargs kill -9"
 
 ...
