@@ -3,6 +3,7 @@
 - name: define hosts
   hosts: localhost
   gather_facts: no
+  tags: [collect]
   tasks:
     - name: ensure vars are defined
       fail:
@@ -28,6 +29,7 @@
 - name: check inputs
   hosts: localhost
   gather_facts: no
+  tags: [collect]
   tasks:
     - name: ensure vars are defined
       fail:
@@ -81,7 +83,9 @@
         seconds: "{{ script_timeout_s | default('300') }}"
     - name: kill the script
       shell: "kill -9 $(ps -o pid= --ppid {{ test_runner.stdout }})"
+      ignore_errors: yes
     - name: fetch output
+      tags: [collect]
       fetch:
         src: "/tmp/{{ emqx_script_result_file }}"
         dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}"
@@ -89,6 +93,7 @@
 
 - name: test
   hosts: localhost
+  tags: [collect]
   tasks:
     - name: compress
       archive:
