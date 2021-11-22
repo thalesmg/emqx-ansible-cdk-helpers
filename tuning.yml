@@ -1,4 +1,28 @@
 ---
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: ensure vars are defined
+      fail:
+        msg: "{{ item }} must be defined!"
+      when: lookup('vars', item) is undefined
+      loop:
+        - emqx_cluster_name
+        - emqx_emqx_num
+        - emqx_loadgen_num
+    - name: create groups and hosts (emqx)
+      add_host:
+        name: "emqx-{{ item }}.int.{{ emqx_cluster_name }}"
+        group: emqx
+        ansible_user: ubuntu
+      loop: "{{ range(0, emqx_emqx_num | int) | list }}"
+    - name: create groups and hosts (loadgen)
+      add_host:
+        name: "loadgen-{{ item }}.int.{{ emqx_cluster_name }}"
+        group: loadgen
+        ansible_user: ubuntu
+      loop: "{{ range(0, emqx_loadgen_num | int) | list }}"
 
 - name: apply tuning to emqx
   hosts: emqx
