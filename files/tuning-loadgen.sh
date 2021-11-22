@@ -5,7 +5,7 @@ set -eu
 {
   sysctl -w net.ipv4.ip_local_port_range="1025 65535"
   echo 1000000 > /proc/sys/fs/nr_open
-  ulimit -n 100000
+  ulimit -n 1000000
 
   # William's config
   sysctl -w net.core.rmem_default=262144000
