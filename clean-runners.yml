@@ -1,0 +1,42 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  tags: [collect]
+  tasks:
+    - name: ensure vars are defined
+      fail:
+        msg: "{{ item }} must be defined!"
+      when: lookup('vars', item) is undefined
+      loop:
+        - emqx_cluster_name
+        - emqx_emqx_num
+        - emqx_loadgen_num
+    - name: create groups and hosts (emqx)
+      add_host:
+        name: "emqx-{{ item }}.int.{{ emqx_cluster_name }}"
+        group: emqx
+        ansible_user: ubuntu
+      loop: "{{ range(0, emqx_emqx_num | int) | list }}"
+    - name: create groups and hosts (loadgen)
+      add_host:
+        name: "loadgen-{{ item }}.int.{{ emqx_cluster_name }}"
+        group: loadgen
+        ansible_user: ubuntu
+      loop: "{{ range(0, emqx_loadgen_num | int) | list }}"
+
+- name: kill lingering scripts
+  hosts: loadgen
+  become: yes
+  become_user: root
+  tasks:
+    - name: show offenders
+      shell: "ps -ef | grep bench"
+      register: offenders
+    - debug:
+        var: offenders.stdout_lines
+    - name: kill the krakens
+      shell: "ps -ef | grep bench | awk '{print $2}' | xargs kill -9"
+
+...
