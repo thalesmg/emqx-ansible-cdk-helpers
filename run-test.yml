@@ -39,6 +39,10 @@
         - emqx_script_result_file
         - emqx_bastion_server
         - emqx_test_script_file
+        - emqtt_bench_interval
+        - emqtt_bench_number_of_connections
+        - emqtt_bench_session_expiry_interval
+        - script_timezone
     - name: ensure test exists
       # delegate_to: localhost
       stat:
