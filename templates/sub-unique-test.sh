@@ -12,6 +12,6 @@ ulimit -n 1000000
 cd /root/emqtt-bench/
 
 {
-  env TZ=America/Sao_Paulo date
-  time ./emqtt_bench sub -c 100000 -i 1 -t 'bench/%c/#' -h $TARGET --ifaddr $ipaddrs 2>&1
+  env TZ={{ script_timezone }} date
+  time ./emqtt_bench sub -c {{ emqtt_bench_number_of_connections }} -i {{ emqtt_bench_interval }} -t 'bench/%c/#' -h $TARGET --ifaddr $ipaddrs 2>&1
 } > "/tmp/$OUTPUT_RECORDING"
