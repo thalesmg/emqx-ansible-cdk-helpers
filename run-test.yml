@@ -68,7 +68,7 @@
     - name: set variables
       set_fact:
         lg_num: "{{ inventory_hostname_short | regex_search('[0-9]+') }}"
-    - name: release the krakens
+    - name: run the scripts
       shell: |
         cd /root/emqtt-bench/
         nohup timeout {{ timeout }}s ./{{ emqx_test_script_file }} {{ lg_num }} {{ emqx_script_result_file }} >/dev/null &
@@ -78,13 +78,13 @@
         timeout: "{{ script_timeout_s | default('300') }}"
     # - debug:
     #     var: test_runner
-    - name: give the script some time...
+    - name: give the scripts some time...
       pause:
         seconds: "{{ script_timeout_s | default('300') }}"
-    - name: kill the krakens
+    - name: kill the scripts
       shell: "kill -9 $(ps -o pid= --ppid {{ test_runner.stdout }})"
       ignore_errors: yes
-    - name: REALLY kill the krakens
+    - name: REALLY kill the scripts
       shell: "ps -ef | grep bench | grep -v grep | awk '{print $2}' | xargs kill -9"
       ignore_errors: yes
     - name: fetch output

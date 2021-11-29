@@ -36,7 +36,7 @@
       register: offenders
     - debug:
         var: offenders.stdout_lines
-    - name: kill the krakens
+    - name: kill the scripts
       shell: "ps -ef | grep bench | grep -v grep | awk '{print $2}' | xargs kill -9"
 
 ...
