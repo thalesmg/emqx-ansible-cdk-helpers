@@ -2,6 +2,21 @@
 
 #+BEGIN_SRC sh
   EMQX_BASTION_IP=XXX.XXX.XXX.XXX
+  ansible-playbook \
+    -i localhost \
+    -e emqx_bastion_server=$EMQX_BASTION_IP \
+    -e emqx_cluster_name=thalesmg \
+    -e emqx_emqx_num=2 \
+    -e emqx_loadgen_num=20 \
+    -e emqx_db_backend=rlog \
+    -e emqx_num_cores=1 \
+    tuning.yml
+#+END_SRC
+
+* running test scripts
+
+#+BEGIN_SRC sh
+  EMQX_BASTION_IP=XXX.XXX.XXX.XXX
   RUN_DATE=$(date +'%Y%m%d-%H%M%S')
   RUN_NAME="mnesia.sub-unique.directly2node"
   OUTPUT_RECORDING="${RUN_NAME}.${RUN_DATE}"
