@@ -61,7 +61,7 @@
   # max_fail_percentage: 0
   tasks:
     - name: copy script
-      copy:
+      template:
         src: "{{ emqx_test_script_file }}"
         dest: /root/emqtt-bench/
         mode: '0777'

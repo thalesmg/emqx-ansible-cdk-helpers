@@ -5,7 +5,7 @@ set -eu
 LG_NUM=$1
 OUTPUT_RECORDING=$2
 
-TARGET="emqx-$(( $LG_NUM % 2 )).int.thalesmg"
+TARGET="emqx-$(( $LG_NUM % {{ groups['emqx'] | length }} )).int.{{ emqx_cluster_name }}"
 ipaddrs=$(ip addr | grep -o '192.*/32' | sed 's#/32##g' | paste -s -d , -)
 ulimit -n 1000000
 
