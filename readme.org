@@ -32,6 +32,7 @@
     -e emqx_test_script_file="sub-unique-test.sh" \
     -e emqtt_bench_interval=1 \
     -e emqtt_bench_number_of_connections=500000 \
+    -e emqtt_bench_session_expiry_interval=0 \
     -e script_timezone=$(timedatectl | grep -i zone | sed 's|.*Time zone: \([^ ]*\).*|\1|')
     run-test.yml
   echo Output recording: ${OUTPUT_RECORDING}
