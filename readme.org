@@ -1,5 +1,20 @@
 * tuning
 
 #+BEGIN_SRC sh
-  ansible-playbook -i inventory -e emqx_bastion_server=$EMQX_BASTION_IP tuning.yml
+  EMQX_BASTION_IP=XXX.XXX.XXX.XXX
+  RUN_DATE=$(date +'%Y%m%d-%H%M%S')
+  RUN_NAME="mnesia.sub-unique.directly2node"
+  OUTPUT_RECORDING="${RUN_NAME}.${RUN_DATE}"
+  echo Output recording: ${OUTPUT_RECORDING}
+  ansible-playbook \
+    -i localhost \
+    -e emqx_bastion_server=$EMQX_BASTION_IP \
+    -e emqx_cluster_name=thalesmg \
+    -e emqx_emqx_num=2 \
+    -e emqx_loadgen_num=20 \
+    -e emqx_script_result_file="$OUTPUT_RECORDING" \
+    -e script_timeout_s=30000 \
+    -e emqx_test_script_file="sub-unique-test.sh" \
+    run-test.yml
+  echo Output recording: ${OUTPUT_RECORDING}
 #+END_SRC
