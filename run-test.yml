@@ -46,7 +46,7 @@
     - name: ensure test exists
       # delegate_to: localhost
       stat:
-        path: "files/{{ emqx_test_script_file }}"
+        path: "templates/{{ emqx_test_script_file }}"
       register: script_file_stat
     - name: ensure test exists
       fail:
