@@ -58,14 +58,47 @@
           template:
             src: cluster-override.conf
             dest: /etc/emqx/cluster-override.conf
-        - name: restart emqx
-          systemd:
-            name: emqx
-            state: restarted
+          notify:
+            - restart emqx
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
         replicants: "{{ groups['emqx'][(emqx_num_cores | int):] }}"
+    - name: beam overlays
+      block:
+        - name: overlay stat path
+          stat:
+            path: "{{ item.dest }}"
+          register: overlay_dests
+          loop: "{{ overlays }}"
+        - debug:
+            var: overlay_dests
+        - name: assert overlay path exists
+          fail:
+            msg: "one or more destinations are absent: {{ overlay_dests.results }}"
+          when: "{{ overlay_dests.results
+                    | map(attribute='stat')
+                    | map(attribute='exists')
+                    | reject('true')
+                    | length != 0 }}"
+        - name: copy overlay file
+          copy:
+            dest: "{{ item.dest }}"
+            src: "{{ item.src }}"
+            backup: yes
+          loop: "{{ overlays }}"
+          notify:
+            - restart emqx
+      when: emqx_beam_overlays
+      vars:
+        overlays:
+          - dest: "/usr/lib/emqx/lib/mnesia-4.19/ebin/mnesia_log.beam"
+            src: "mnesia_log.beam"
+  handlers:
+    - name: restart emqx
+      systemd:
+        name: emqx
+        state: restarted
 
 - name: apply tuning to loadgen
   hosts: loadgen
