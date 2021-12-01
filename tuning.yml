@@ -54,14 +54,27 @@
           loop:
             - cores
             - replicants
+        - name: ensure etc directory
+          file:
+            path: /etc/emqx
+            state: directory
         - name: set cluster-override.conf
           template:
             src: cluster-override.conf
             dest: /etc/emqx/cluster-override.conf
+        - name: stop emqx
+          systemd:
+            name: emqx
+            state: stopped
+        - name: drop mnesia data and the logs
+          shell: "rm -rf {{ item }}/*"
+          with_items:
+            - "/var/lib/emqx/mnesia"
+            - "/var/log/emqx"
         - name: restart emqx
           systemd:
             name: emqx
-            state: restarted
+            state: started
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
