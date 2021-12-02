@@ -37,3 +37,26 @@
     run-test.yml
   echo Output recording: ${OUTPUT_RECORDING}
 #+END_SRC
+
+*** overlays
+
+to run the "overlay files" step, put the files to be copied onto the
+servers on =files/=, add the source and destination paths in
+=tuning.yml= and execute the playbook passing the =-e emqx_beam_overlays=True=
+flag.
+
+ex:
+
+#+BEGIN_SRC yaml
+  # tuning.yml
+        block:
+        - name: overlay stat path
+        # .....
+      when: emqx_beam_overlays
+      vars:
+        overlays:
+          - dest: "/usr/lib/emqx/lib/mnesia-4.19/ebin/mnesia_log.beam"
+            src: "mnesia_log.beam"
+          - dest: "/etc/emqx/emqx.conf"
+            src: my-emqx.conf
+#+END_SRC
