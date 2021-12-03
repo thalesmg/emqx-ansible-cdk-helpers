@@ -64,15 +64,18 @@
             dest: /etc/emqx/cluster-override.conf
           notify:
             - restart emqx
+          register: cluster_override_update
         - name: stop emqx
           systemd:
             name: emqx
             state: stopped
+          when: cluster_override_update.changed
         - name: drop mnesia data and the logs
           shell: "rm -rf {{ item }}/*"
           with_items:
             - "/var/lib/emqx/mnesia"
             # - "/var/log/emqx"
+          when: cluster_override_update.changed
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
