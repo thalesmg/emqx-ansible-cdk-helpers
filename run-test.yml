@@ -3,7 +3,6 @@
 - name: define hosts
   hosts: localhost
   gather_facts: no
-  tags: [collect]
   tasks:
     - name: ensure vars are defined
       fail:
@@ -29,7 +28,6 @@
 - name: check inputs
   hosts: localhost
   gather_facts: no
-  tags: [collect]
   tasks:
     - name: ensure vars are defined
       fail:

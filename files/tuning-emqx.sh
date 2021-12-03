@@ -3,12 +3,14 @@
 set -eu
 
 {
-  # 2 millions system-wide
-  sysctl -w fs.file-max=2097152
-  sysctl -w fs.nr_open=2097152
-  echo 2097152 > /proc/sys/fs/nr_open
-  # for the current session
-  ulimit -n 2097152
+  # NB: Those are present in `os_common.sh` in CDK with higher
+  # numbers...
+  # # 2 millions system-wide
+  # sysctl -w fs.file-max=2097152
+  # sysctl -w fs.nr_open=2097152
+  # echo 2097152 > /proc/sys/fs/nr_open
+  # # for the current session
+  # ulimit -n 2097152
 
   # Increase number of incoming connections backlog:
   sysctl -w net.core.somaxconn=32768
@@ -18,7 +20,8 @@ set -eu
   # local port range
   # sysctl -w net.ipv4.ip_local_port_range='1000 65535'
   # TMG FIXME: had to use this:
-  sysctl -w net.ipv4.ip_local_port_range='1025 65535'
+  # Already present in `os_common.sh`...
+  # sysctl -w net.ipv4.ip_local_port_range='1025 65535'
 
   # TCP Socket read/write buffer:
   # sysctl -w net.core.rmem_default=262144
