@@ -91,6 +91,7 @@
       systemd:
         name: emqx
         state: restarted
+        daemon_reload: yes
 
 - name: apply tuning to loadgen
   hosts: loadgen
