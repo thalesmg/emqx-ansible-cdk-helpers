@@ -79,6 +79,13 @@
         overlays:
           - dest: "/usr/lib/emqx/lib/mnesia-4.19/ebin/mnesia_log.beam"
             src: "mnesia_log.beam"
+    - name: increase LimitNOFILE in emqx.service
+      lineinfile:
+        path: "/lib/systemd/system/emqx.service"
+        regexp: "^LimitNOFILE"
+        line: "LimitNOFILE=1000000000"
+      notify:
+        - restart emqx
   handlers:
     - name: restart emqx
       systemd:
