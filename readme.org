@@ -17,26 +17,38 @@
 
 #+BEGIN_SRC sh
   EMQX_BASTION_IP=XXX.XXX.XXX.XXX
+  NUM_EMQX=10
+  NUM_LG=3
   RUN_DATE=$(date +'%Y%m%d-%H%M%S')
-  RUN_NAME="mnesia.sub-unique.directly2node"
+  NUM_PROC=30
+  INTERVAL_MS=7
+  TEST_TYPE="conn"
+  RUN_NAME="rlog.10cores.${TEST_TYPE}.directly2node.mnesia-nolog.${NUM_PROC}proc.${INTERVAL_MS}ms"
   OUTPUT_RECORDING="${RUN_NAME}.${RUN_DATE}"
   echo Output recording: ${OUTPUT_RECORDING}
   ansible-playbook \
     -i localhost \
     -e emqx_bastion_server=$EMQX_BASTION_IP \
     -e emqx_cluster_name=thalesmg \
-    -e emqx_emqx_num=2 \
-    -e emqx_loadgen_num=20 \
+    -e emqx_emqx_num=${NUM_EMQX} \
+    -e emqx_loadgen_num=${NUM_LG} \
     -e emqx_script_result_file="$OUTPUT_RECORDING" \
     -e script_timeout_s=30000 \
-    -e emqx_test_script_file="sub-unique-test.sh" \
-    -e emqtt_bench_interval=1 \
-    -e emqtt_bench_number_of_connections=500000 \
+    -e emqx_test_script_file="${TEST_TYPE}-test.sh" \
+    -e emqtt_bench_interval=${INTERVAL_MS} \
+    -e emqx_test_procs=${NUM_PROC} \
+    -e emqtt_bench_number_of_connections=1500000 \
     -e emqtt_bench_session_expiry_interval=0 \
     -e script_timezone=$(timedatectl | grep -i zone | sed 's|.*Time zone: \([^ ]*\).*|\1|')
     run-test.yml
   echo Output recording: ${OUTPUT_RECORDING}
 #+END_SRC
+
+To skip collecting output from =emqtt-bench=, simply pass ~--skip-tags
+collect~ to the command above.
+
+Also, one can pass ~-e emqtt_bench_lowmem_mode=True~ to use
+=emqtt-bench='s low memory mode.
 
 *** overlays
 
