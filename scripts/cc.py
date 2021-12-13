@@ -56,6 +56,20 @@ def get_node_dump_output_file(res) -> str:
     ][0]
 
 
+def fetch_crashdump(c : Connection, outdir : Path, prefix : str):
+    crashdump = "/var/log/emqx/erl_crash.dump"
+    stat = c.run(f"sudo stat {crashdump}", warn=True, hide=True)
+    if stat.exited == 0:
+        c.run(f"sudo cp {crashdump} /tmp/")
+        crashdump = "/tmp/erl_crash.dump"
+        c.run(f"sudo chmod 0777 {crashdump}")
+        outfile = f"{prefix}.{c.host}.crashdump"
+        outfilepath = outdir.joinpath(outfile)
+        c.get(crashdump, local=str(outfilepath))
+        gzip_file(outfilepath)
+        outfilepath.unlink()
+
+
 def fetch_node_dump(c : Connection, outdir : Path, prefix : str):
     res = c.run("sudo /usr/lib/emqx/bin/node_dump")
     nodedump = get_node_dump_output_file(res)
@@ -83,6 +97,7 @@ def fetch_logs(args):
     for c in inventory_emqx(num_emqx, bastion_ip, cluster_name):
         fetch_syslog(c, outdir, prefix)
         fetch_node_dump(c, outdir, prefix)
+        fetch_crashdump(c, outdir, prefix)
 
 
 def main(argv):

@@ -1,0 +1,29 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - define_inventory
+
+- hosts: emqx
+  become: yes
+  tasks:
+    - name: emqx running?
+      shell: emqx_ctl status
+      register: emqx_status
+    - name: mria config?
+      shell: >
+        emqx eval "lists:sort(application:get_all_env(mria))"
+      register: emqx_mria_config
+    - name: mnesia_log md5?
+      shell: >
+        emqx eval "mnesia_log:module_info(md5)"
+      register: mnesia_log_md5
+    - debug:
+        var: "{{ item }}.stdout_lines"
+      loop:
+        - emqx_status
+        - emqx_mria_config
+        - mnesia_log_md5
+...
