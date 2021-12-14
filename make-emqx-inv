@@ -1,0 +1,12 @@
+#!/usr/bin/env bb
+;; -*- mode: clojure; -*-
+
+(let [[bastion-ip num-emqx] *command-line-args*
+      emqxs (map #(str "emqx-" % ".int.thalesmg") (range (Integer/parseInt num-emqx)))]
+  (doseq [emqx emqxs]
+    (println (str "ssh"
+                  " -o StrictHostKeyChecking=no"
+                  " -J ec2-user@"
+                  bastion-ip
+                  " ubuntu@"
+                  emqx))))
