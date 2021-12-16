@@ -11,7 +11,9 @@
 - name: create groups and hosts (emqx)
   add_host:
     name: "emqx-{{ item }}.int.{{ emqx_cluster_name }}"
-    group: emqx
+    groups:
+      - emqx
+      - "{{ 'cores' if item < (emqx_num_cores | int) else 'replicants' }}"
     ansible_user: ubuntu
   loop: "{{ range(0, emqx_emqx_num | int) | list }}"
 - name: create groups and hosts (loadgen)

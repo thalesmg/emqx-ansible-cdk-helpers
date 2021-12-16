@@ -5,7 +5,12 @@ set -eu
 LG_NUM=$1
 OUTPUT_RECORDING=$2
 
+{% if groups['replicants'] %}
+# Note: targeting only replicants when they exist
+TARGET="emqx-$(( {{ emqx_num_cores }} + $LG_NUM % {{ groups['replicants'] | length }} )).int.{{ emqx_cluster_name }}"
+{% else %}
 TARGET="emqx-$(( $LG_NUM % {{ groups['emqx'] | length }} )).int.{{ emqx_cluster_name }}"
+{% endif %}
 
 cd /root/emqtt-bench/
 
