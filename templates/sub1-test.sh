@@ -22,6 +22,6 @@ cd /root/emqtt-bench/
        -x {{ emqtt_bench_session_expiry_interval }} \
        -t 'bench/1/2/3/#' \
        {{ "--lowmem" if (emqtt_bench_lowmem_mode | default(False) | bool) else "" }} \
-       {{ "--prefix " + emqtt_bench_prefix if emqtt_bench_prefix is defined else "" }} \
+       {{ "--prefix \"" + emqtt_bench_prefix + "\"" if emqtt_bench_prefix is defined else "" }} \
        -h $TARGET 2>&1
 } > "/tmp/$OUTPUT_RECORDING"
