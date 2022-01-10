@@ -21,6 +21,7 @@
     name: "loadgen-{{ item }}.int.{{ emqx_cluster_name }}"
     group: loadgen
     ansible_user: ubuntu
+    loadgen_num: "{{ item }}"
   loop: "{{ range(0, emqx_loadgen_num | int) | list }}"
 
 ...
