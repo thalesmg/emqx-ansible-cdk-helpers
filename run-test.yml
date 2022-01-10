@@ -48,20 +48,19 @@
         src: "{{ emqx_test_script_file }}"
         dest: /root/emqtt-bench/
         mode: '0777'
-    - name: set variables
-      set_fact:
-        lg_num: "{{ inventory_hostname_short | regex_search('[0-9]+') }}"
     - name: run the scripts
       shell: |
         cd /root/emqtt-bench/
-        for i in $(seq 0 {{ (emqx_test_procs | default(1) | int) - 1 }})
+        for i in $(seq {{ start_n }} {{ (start_n | int) + (num_procs | int) - 1 }})
         do
-          nohup timeout {{ timeout }}s ./{{ emqx_test_script_file }} $(( {{ lg_num }} + $i )) {{ emqx_script_result_file }} >/dev/null &
+          nohup timeout {{ timeout }}s ./{{ emqx_test_script_file }} $i {{ emqx_script_result_file }} >/dev/null &
           echo $!
         done
       register: test_runner
       vars:
         timeout: "{{ script_timeout_s | default('300') }}"
+        num_procs: "{{ emqx_test_procs | default(1) | int }}"
+        start_n: "{{ (loadgen_num * (emqx_test_procs | default(1) | int)) | int }}"
     - debug:
         var: test_runner
     - name: give the scripts some time...
