@@ -20,5 +20,6 @@ cd /root/emqtt-bench/
        -c {{ emqtt_bench_number_of_connections }} \
        -i {{ emqtt_bench_interval }} \
        {{ "--lowmem" if (emqtt_bench_lowmem_mode | default(False) | bool) else "" }} \
+       {{ "--prefix " + emqtt_bench_prefix if emqtt_bench_prefix is defined else "" }} \
        -h $TARGET  2>&1
 } > "/tmp/$OUTPUT_RECORDING"
