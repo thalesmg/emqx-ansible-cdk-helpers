@@ -11,8 +11,8 @@
   become: yes
   become_user: root
   tasks:
-    - name: apply tuning to emqx | set kernel parameters
-      script: ./files/tuning-emqx.sh
+    # - name: apply tuning to emqx | set kernel parameters
+    #   script: ./files/tuning-emqx.sh
     - name: set db backend configs
       block:
         - name: set facts
@@ -34,17 +34,17 @@
           notify:
             - restart emqx
           register: cluster_override_update
-        - name: stop emqx
-          systemd:
-            name: emqx
-            state: stopped
-          when: cluster_override_update.changed
-        - name: drop mnesia data and the logs
-          shell: "rm -rf {{ item }}/*"
-          with_items:
-            - "/var/lib/emqx/mnesia"
-            # - "/var/log/emqx"
-          when: cluster_override_update.changed
+        # - name: stop emqx
+        #   systemd:
+        #     name: emqx
+        #     state: stopped
+        #   when: cluster_override_update.changed
+        # - name: drop mnesia data and the logs
+        #   shell: "rm -rf {{ item }}/*"
+        #   with_items:
+        #     - "/var/lib/emqx/mnesia"
+        #     # - "/var/log/emqx"
+        #   when: cluster_override_update.changed
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
@@ -86,6 +86,16 @@
         line: "LimitNOFILE=1000000000"
       notify:
         - restart emqx
+    # - name: install python and pip
+    #   package:
+    #     name:
+    #       - python3
+    #       - python3-pip
+    #     state: present
+    # - name: install python psutil
+    #   pip:
+    #     name: psutil
+    #     state: present
   handlers:
     - name: restart emqx
       systemd:
@@ -93,12 +103,12 @@
         state: restarted
         daemon_reload: yes
 
-- name: apply tuning to loadgen
-  hosts: loadgen
-  become: yes
-  become_user: root
-  tasks:
-    - name: set kernel parameters
-      script: ./files/tuning-loadgen.sh
+# - name: apply tuning to loadgen
+#   hosts: loadgen
+#   become: yes
+#   become_user: root
+#   tasks:
+#     - name: set kernel parameters
+#       script: ./files/tuning-loadgen.sh
 
 ...
