@@ -87,6 +87,19 @@ def fetch_syslog(c : Connection, outdir : Path, prefix : str):
     outfilepath.unlink()
 
 
+def fetch_mem_ets_dump(c : Connection, outdir : Path, prefix : str):
+    dumps = [
+        med
+        for med in os.listdir("/tmp/")
+        if med.endswith("_mem-ets-dump.txt")
+    ]
+    for dump in dumps:
+        infile = f"/tmp/{dump}"
+        outfile = f"{prefix}.{c.host}.{dump}"
+        outfilepath = outdir.joinpath(outfile)
+        c.get(infile, local=str(outfilepath))
+
+
 def fetch_logs(args):
     outdir = args.outdir
     bastion_ip = args.bastion_ip
@@ -98,6 +111,7 @@ def fetch_logs(args):
         fetch_syslog(c, outdir, prefix)
         fetch_node_dump(c, outdir, prefix)
         fetch_crashdump(c, outdir, prefix)
+        fetch_mem_ets_dump(c, outdir, prefix)
 
 
 def main(argv):
