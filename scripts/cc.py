@@ -90,7 +90,7 @@ def fetch_syslog(c : Connection, outdir : Path, prefix : str):
 def fetch_mem_ets_dump(c : Connection, outdir : Path, prefix : str):
     dumps = [
         med
-        for med in os.listdir("/tmp/")
+        for med in c.run("ls /tmp/", hide=True).stdout.splitlines()
         if med.endswith("_mem-ets-dump.txt")
     ]
     for dump in dumps:
