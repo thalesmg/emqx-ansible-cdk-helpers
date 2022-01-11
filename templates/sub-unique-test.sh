@@ -12,6 +12,8 @@ TARGET="emqx-$(( {{ emqx_num_cores }} + $LG_NUM % {{ groups['replicants'] | leng
 TARGET="emqx-$(( $LG_NUM % {{ groups['emqx'] | length }} )).int.{{ emqx_cluster_name }}"
 {% endif %}
 
+START_NUM=$(( $LG_NUM * {{ emqtt_bench_number_of_connections }} ))
+
 cd /root/emqtt-bench/
 
 {
@@ -22,6 +24,8 @@ cd /root/emqtt-bench/
        -x {{ emqtt_bench_session_expiry_interval }} \
        -t 'bench/%c/#' \
        {{ "--lowmem" if (emqtt_bench_lowmem_mode | default(False) | bool) else "" }} \
+       -n "$START_NUM" \
        {{ "--prefix \"" + emqtt_bench_prefix + "\"" if emqtt_bench_prefix is defined else "" }} \
+       {{ "--shortids" if (emqtt_bench_shortids | default(False) | bool) else "" }} \
        -h $TARGET 2>&1
 } > "/tmp/$OUTPUT_RECORDING"

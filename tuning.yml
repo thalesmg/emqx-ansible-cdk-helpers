@@ -100,7 +100,8 @@
     - name: restart emqx
       systemd:
         name: emqx
-        state: restarted
+        # state: restarted
+        state: reloaded
         daemon_reload: yes
 
 # - name: apply tuning to loadgen
