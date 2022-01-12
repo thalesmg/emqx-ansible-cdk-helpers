@@ -34,11 +34,11 @@
           notify:
             - restart emqx
           register: cluster_override_update
-        # - name: stop emqx
-        #   systemd:
-        #     name: emqx
-        #     state: stopped
-        #   when: cluster_override_update.changed
+        - name: stop emqx
+          systemd:
+            name: emqx
+            state: stopped
+          when: cluster_override_update.changed
         # - name: drop mnesia data and the logs
         #   shell: "rm -rf {{ item }}/*"
         #   with_items:
