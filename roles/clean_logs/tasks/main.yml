@@ -6,3 +6,4 @@
 
 - name: clear mem ets dumps
   shell: "rm /tmp/*_mem-ets-dump.txt"
+  ignore_errors: yes
