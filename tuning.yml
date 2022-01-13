@@ -77,7 +77,7 @@
       when: emqx_beam_overlays
       vars:
         overlays:
-          - dest: "/usr/lib/emqx/lib/mnesia-4.19/ebin/mnesia_log.beam"
+          - dest: "/usr/lib/emqx/lib/mnesia-4.20/ebin/mnesia_log.beam"
             src: "mnesia_log.beam"
     - name: increase LimitNOFILE in emqx.service
       lineinfile:
