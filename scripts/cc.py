@@ -108,8 +108,12 @@ def fetch_logs(args):
     prefix = args.prefix
 
     for c in inventory_emqx(num_emqx, bastion_ip, cluster_name):
+        print(f"dumping {c}")
         fetch_syslog(c, outdir, prefix)
-        fetch_node_dump(c, outdir, prefix)
+        try:
+            fetch_node_dump(c, outdir, prefix)
+        except Exception as e:
+            print(e)
         fetch_crashdump(c, outdir, prefix)
         fetch_mem_ets_dump(c, outdir, prefix)
 

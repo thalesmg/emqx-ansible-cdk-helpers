@@ -11,8 +11,8 @@
   become: yes
   become_user: root
   tasks:
-    # - name: apply tuning to emqx | set kernel parameters
-    #   script: ./files/tuning-emqx.sh
+    - name: apply tuning to emqx | set kernel parameters
+      script: ./files/tuning-emqx.sh
     - name: set db backend configs
       block:
         - name: set facts
@@ -78,7 +78,7 @@
       vars:
         overlays:
           - dest: "/usr/lib/emqx/lib/mnesia-4.20/ebin/mnesia_log.beam"
-            src: "mnesia_log.beam"
+            src: "mnesia_log.4.19.beam"
     - name: increase LimitNOFILE in emqx.service
       lineinfile:
         path: "/lib/systemd/system/emqx.service"
