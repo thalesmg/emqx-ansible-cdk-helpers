@@ -93,11 +93,12 @@ def fetch_mem_ets_dump(c : Connection, outdir : Path, prefix : str):
         for med in c.run("ls /tmp/", hide=True).stdout.splitlines()
         if med.endswith("_mem-ets-dump.txt")
     ]
-    outfile = f"{prefix}.{c.host}.mem-ets-dump.tar.bz2"
-    tar_dump = f"/tmp/{outfile}"
-    c.run(f"cd /tmp && tar -cjf {tar_dump} *_mem-ets-dump.txt")
-    outfilepath = outdir.joinpath(outfile)
-    c.get(tar_dump, local=str(outfilepath))
+    if dumps:
+        outfile = f"{prefix}.{c.host}.mem-ets-dump.tar.bz2"
+        tar_dump = f"/tmp/{outfile}"
+        c.run(f"cd /tmp && tar -cjf {tar_dump} *_mem-ets-dump.txt")
+        outfilepath = outdir.joinpath(outfile)
+        c.get(tar_dump, local=str(outfilepath))
     # for dump in dumps:
     #     infile = f"/tmp/{dump}"
     #     outfile = f"{prefix}.{c.host}.{dump}"
