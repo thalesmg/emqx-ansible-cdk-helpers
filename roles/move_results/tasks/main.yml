@@ -1,0 +1,19 @@
+---
+
+- name: results?
+  stat:
+    path: "./tmp/data/{{ emqx_script_result_file }}"
+  register: results_stat
+- block:
+    - name: copy to destination
+      copy:
+        remote_src: yes
+        src: "{{ results_stat.stat.path }}"
+        dest: "{{ emqx_script_result_dest }}/{{ emqx_script_result_file }}"
+    - name: remove original
+      file:
+        path: "{{ results_stat.stat.path }}"
+        state: absent
+  when: results_stat.stat.exists and results_stat.stat.isdir and emqx_script_result_dest is defined and emqx_script_result_dest
+
+...

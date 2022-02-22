@@ -1,0 +1,20 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - define_inventory
+
+- name: fetch logs
+  hosts: emqx
+  become: yes
+  become_user: root
+  tasks:
+    - name: syslog
+      fetch:
+        src: "/var/log/syslog"
+        dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}/syslog"
+        flat: yes
+
+...

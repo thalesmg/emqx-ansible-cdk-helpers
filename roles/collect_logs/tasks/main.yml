@@ -1,0 +1,54 @@
+---
+
+- name: produce node_dump
+  shell: "/usr/lib/emqx/bin/node_dump"
+  register: node_dump_invoke
+  ignore_errors: yes
+- name: find node dump location
+  when: not node_dump_invoke.failed
+  set_fact:
+    node_dump_path: "{{ node_dump_invoke.stdout | regex_search(regexp, '\\1') }}"
+  vars:
+    regexp: "Created a node dump (.+)"
+- name: fetch node dump
+  when: not node_dump_invoke.failed and node_dump_path is defined and node_dump_path
+  fetch:
+    src: "{{ node_dump_path[0] }}"
+    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-node_dump.tar.gz"
+    flat: yes
+- name: crashdump?
+  stat:
+    path: "/var/log/emqx/erl_crash.dump"
+  register: crashdump_stat
+- name: syslog?
+  stat:
+    path: "/var/log/syslog"
+  register: syslog_stat
+- name: fetch crashdump
+  when: crashdump_stat.stat.exists
+  fetch:
+    src: "{{ crashdump_stat.stat.path }}"
+    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-crashdump"
+    flat: yes
+- name: fetch syslog
+  when: syslog_stat.stat.exists
+  fetch:
+    src: "{{ syslog_stat.stat.path }}"
+    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-syslog"
+    flat: yes
+- name: find mem ets dumps
+  shell: "ls /tmp/*_mem-ets-dump.txt 2>/dev/null || true"
+  register: mem_ets_dumps
+- name: tar mem ets dumps
+  when: mem_ets_dumps.stdout_lines
+  shell: |
+    cd /tmp
+    tar -cjf {{ emqx_script_result_file }}.mem-ets-dump.tar.bz2 *_mem-ets-dump.txt
+- name: fetch mem ets dumps
+  when: mem_ets_dumps.stdout_lines
+  fetch:
+    src: "/tmp/{{ emqx_script_result_file }}.mem-ets-dump.tar.bz2"
+    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-mem-ets-dump.tar.bz2"
+    flat: yes
+
+...
