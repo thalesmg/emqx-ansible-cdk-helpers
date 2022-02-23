@@ -9,7 +9,7 @@
     - name: stop emqx
       shell: emqx stop
       register: stop_result
-      retries: 5
+      retries: 1
       delay: 3
       until: '"badrpc,timeout" not in stop_result.stderr'
       failed_when: '"badrpc,timeout" in stop_result.stderr'
