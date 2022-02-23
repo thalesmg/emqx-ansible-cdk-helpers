@@ -9,7 +9,7 @@
       copy:
         remote_src: yes
         src: "{{ results_stat.stat.path }}"
-        dest: "{{ emqx_script_result_dest }}/{{ emqx_script_result_file }}"
+        dest: "{{ emqx_script_result_dest }}/"
     - name: remove original
       file:
         path: "{{ results_stat.stat.path }}"
