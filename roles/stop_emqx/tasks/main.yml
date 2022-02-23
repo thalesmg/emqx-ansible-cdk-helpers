@@ -7,7 +7,7 @@
 - name: stop emqx
   block:
     - name: stop emqx
-      shell: emqx stop
+      shell: env EMQX_WAIT_FOR_STOP=20 emqx stop
       register: stop_result
       retries: 1
       delay: 3
