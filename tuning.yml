@@ -18,11 +18,11 @@
         - name: set facts
           set_fact:
             emqx_db_role: "{{ 'core' if inventory_hostname in cores else 'replicant' }}"
-        - debug:
-            var: "{{ item }}"
-          loop:
-            - cores
-            - replicants
+        # - debug:
+        #     var: "{{ item }}"
+        #   loop:
+        #     - cores
+        #     - replicants
         - name: ensure etc directory
           file:
             path: /etc/emqx
