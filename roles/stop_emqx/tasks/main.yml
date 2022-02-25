@@ -16,3 +16,4 @@
   rescue:
     - name: REALLY stop emqx
       shell: "pkill -9 beam.smp"
+      ignore_errors: yes
