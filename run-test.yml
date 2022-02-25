@@ -19,6 +19,7 @@
         - emqx_bastion_server
         - emqx_test_script_file
         - emqtt_bench_interval
+        - emqtt_bench_pub_interval
         - emqtt_bench_number_of_connections
         - emqtt_bench_session_expiry_interval
         - script_timezone
@@ -84,11 +85,13 @@
   hosts: emqx
   become: yes
   become_user: root
+  tags: [collect_logs]
   roles:
     - collect_logs
 
 - name: move results
   hosts: localhost
+  tags: [collect_logs]
   roles:
     - move_results
 
