@@ -45,6 +45,12 @@
             name: emqx
             state: stopped
           when: ad_hoc_override_update.changed
+        # - name: increase zdbbl (:dist_buf_busy_limit)
+        #   lineinfile:
+        #     path: "/etc/emqx/vm.args"
+        #     insertafter: EOF
+        #     regex: '^#?\+zdbbl'
+        #     line: '#+zdbbl 8192'
         # - name: drop mnesia data and the logs
         #   shell: "rm -rf {{ item }}/*"
         #   with_items:
