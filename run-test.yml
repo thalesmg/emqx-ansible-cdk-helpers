@@ -23,15 +23,15 @@
         - emqtt_bench_number_of_connections
         - emqtt_bench_session_expiry_interval
         - script_timezone
-    - name: ensure test exists
-      # delegate_to: localhost
-      stat:
-        path: "templates/{{ emqx_test_script_file }}"
-      register: script_file_stat
-    - name: ensure test exists
-      fail:
-        msg: "test script {{ emqx_test_script_file }} does not exist!"
-      when: not script_file_stat.stat.exists
+    # - name: ensure test exists
+    #   # delegate_to: localhost
+    #   stat:
+    #     path: "templates/{{ emqx_test_script_file }}"
+    #   register: script_file_stat
+    # - name: ensure test exists
+    #   fail:
+    #     msg: "test script {{ emqx_test_script_file }} does not exist!"
+    #   when: not script_file_stat.stat.exists
     - debug:
         msg: |
           script: {{ emqx_test_script_file }}
@@ -44,42 +44,35 @@
   # strategy: free
   # max_fail_percentage: 0
   tasks:
-    - name: copy script
+    - name: copy scripts
       template:
-        src: "{{ emqx_test_script_file }}"
+        src: "{{ item }}"
         dest: /root/emqtt-bench/
         mode: '0777'
-    - name: run the scripts
-      shell: |
-        cd /root/emqtt-bench/
-        for i in $(seq {{ start_n }} {{ (start_n | int) + (num_procs | int) - 1 }})
-        do
-          nohup timeout {{ timeout }}s ./{{ emqx_test_script_file }} $i {{ emqx_script_result_file }} >/dev/null &
-          echo $!
-        done
-      register: test_runner
+      loop:
+        - "run-tests.py"
+        - "conn-test.sh"
+        - "sub1-test.sh"
+        - "sub-unique-test.sh"
       vars:
         timeout: "{{ script_timeout_s | default('300') }}"
         num_procs: "{{ emqx_test_procs | default(1) | int }}"
         start_n: "{{ (loadgen_num * (emqx_test_procs | default(1) | int)) | int }}"
-    # - debug:
-    #     var: test_runner
+    - name: run the script
+      shell: |
+        nohup /root/emqtt-bench/run-tests.py {{ emqx_test_script_file }} 2>&1 | logger -t cluster_test &
+        echo $!
+      register: test_runner
     - name: give the scripts some time...
       pause:
         seconds: "{{ script_timeout_s | default('300') }}"
-    # - name: kill the scripts
-    #   shell: "kill -9 $(ps -o pid= --ppid {{ test_runner.stdout }})"
-    #   ignore_errors: yes
+    - name: kill the script
+      shell: "kill {{ test_runner.stdout }}"
+      ignore_errors: yes
     - name: REALLY kill the scripts
-      shell: "ps -ef | grep bench | grep -v grep | awk '{print $2}' | xargs kill -9"
+      shell: "pgrep beam | xargs kill -9"
       # shell: "pkill beam"
       ignore_errors: yes
-    # - name: fetch output
-    #   tags: [collect]
-    #   fetch:
-    #     src: "/tmp/{{ emqx_script_result_file }}"
-    #     dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}"
-    #     flat: yes
 
 - name: collect logs
   hosts: emqx
