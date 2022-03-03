@@ -93,11 +93,17 @@ def fetch_mem_ets_dump(c : Connection, outdir : Path, prefix : str):
         for med in c.run("ls /tmp/", hide=True).stdout.splitlines()
         if med.endswith("_mem-ets-dump.txt")
     ]
-    for dump in dumps:
-        infile = f"/tmp/{dump}"
-        outfile = f"{prefix}.{c.host}.{dump}"
+    if dumps:
+        outfile = f"{prefix}.{c.host}.mem-ets-dump.tar.bz2"
+        tar_dump = f"/tmp/{outfile}"
+        c.run(f"cd /tmp && tar -cjf {tar_dump} *_mem-ets-dump.txt")
         outfilepath = outdir.joinpath(outfile)
-        c.get(infile, local=str(outfilepath))
+        c.get(tar_dump, local=str(outfilepath))
+    # for dump in dumps:
+    #     infile = f"/tmp/{dump}"
+    #     outfile = f"{prefix}.{c.host}.{dump}"
+    #     outfilepath = outdir.joinpath(outfile)
+    #     c.get(infile, local=str(outfilepath))
 
 
 def fetch_logs(args):
@@ -108,8 +114,12 @@ def fetch_logs(args):
     prefix = args.prefix
 
     for c in inventory_emqx(num_emqx, bastion_ip, cluster_name):
+        print(f"dumping {c}")
         fetch_syslog(c, outdir, prefix)
-        fetch_node_dump(c, outdir, prefix)
+        try:
+            fetch_node_dump(c, outdir, prefix)
+        except Exception as e:
+            print(e)
         fetch_crashdump(c, outdir, prefix)
         fetch_mem_ets_dump(c, outdir, prefix)
 

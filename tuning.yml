@@ -11,40 +11,52 @@
   become: yes
   become_user: root
   tasks:
-    # - name: apply tuning to emqx | set kernel parameters
-    #   script: ./files/tuning-emqx.sh
+    - name: apply tuning to emqx | set kernel parameters
+      script: ./files/tuning-emqx.sh
     - name: set db backend configs
       block:
         - name: set facts
           set_fact:
             emqx_db_role: "{{ 'core' if inventory_hostname in cores else 'replicant' }}"
-        - debug:
-            var: "{{ item }}"
-          loop:
-            - cores
-            - replicants
+        # - debug:
+        #     var: "{{ item }}"
+        #   loop:
+        #     - cores
+        #     - replicants
         - name: ensure etc directory
           file:
             path: /etc/emqx
             state: directory
-        - name: set cluster-override.conf
+        - name: include ad-hoc overrides
+          lineinfile:
+            path: "/etc/emqx/emqx.conf"
+            insertafter: EOF
+            regex: 'include "ad-hoc-overrides\.conf"'
+            line: 'include "ad-hoc-overrides.conf"'
+        - name: set ad-hoc-overrides.conf
           template:
-            src: cluster-override.conf
-            dest: /etc/emqx/cluster-override.conf
-          notify:
-            - restart emqx
-          register: cluster_override_update
-        # - name: stop emqx
-        #   systemd:
-        #     name: emqx
-        #     state: stopped
-        #   when: cluster_override_update.changed
+            src: ad-hoc-overrides.conf
+            dest: /etc/emqx/ad-hoc-overrides.conf
+          # notify:
+          #   - restart emqx
+          register: ad_hoc_override_update
+        - name: stop emqx
+          systemd:
+            name: emqx
+            state: stopped
+          when: ad_hoc_override_update.changed
+        # - name: increase zdbbl (:dist_buf_busy_limit)
+        #   lineinfile:
+        #     path: "/etc/emqx/vm.args"
+        #     insertafter: EOF
+        #     regex: '^#?\+zdbbl'
+        #     line: '#+zdbbl 8192'
         # - name: drop mnesia data and the logs
         #   shell: "rm -rf {{ item }}/*"
         #   with_items:
         #     - "/var/lib/emqx/mnesia"
         #     # - "/var/log/emqx"
-        #   when: cluster_override_update.changed
+        #   when: ad_hoc_override_update.changed
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
@@ -72,20 +84,21 @@
             src: "{{ item.src }}"
             backup: yes
           loop: "{{ overlays }}"
-          notify:
-            - restart emqx
+          # notify:
+          #   - restart emqx
       when: emqx_beam_overlays
       vars:
         overlays:
-          - dest: "/usr/lib/emqx/lib/mnesia-4.19/ebin/mnesia_log.beam"
-            src: "mnesia_log.beam"
+          - dest: "/usr/lib/emqx/lib/mnesia-4.20.1/ebin/mnesia_log.beam"
+          # - dest: "/usr/lib/emqx/lib/mnesia-4.18.1/ebin/mnesia_log.beam"
+            src: "mnesia_log.4.19.beam"
     - name: increase LimitNOFILE in emqx.service
       lineinfile:
         path: "/lib/systemd/system/emqx.service"
         regexp: "^LimitNOFILE"
         line: "LimitNOFILE=1000000000"
-      notify:
-        - restart emqx
+      # notify:
+      #   - restart emqx
     # - name: install python and pip
     #   package:
     #     name:
@@ -100,7 +113,8 @@
     - name: restart emqx
       systemd:
         name: emqx
-        state: restarted
+        # state: restarted
+        state: reloaded
         daemon_reload: yes
 
 # - name: apply tuning to loadgen
@@ -110,5 +124,7 @@
 #   tasks:
 #     - name: set kernel parameters
 #       script: ./files/tuning-loadgen.sh
+
+- import_playbook: full-restart.yaml
 
 ...

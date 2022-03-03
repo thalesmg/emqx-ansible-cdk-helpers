@@ -1,0 +1,12 @@
+- name: clear mnesia dir
+  shell: "rm -rf /var/lib/emqx/mnesia/*"
+
+- name: clear emqx logs
+  shell: "rm -rf /var/log/emqx/*"
+
+- name: clear syslog
+  shell: "echo > /var/log/syslog"
+
+- name: clear mem ets dumps
+  shell: "rm /tmp/*_mem-ets-dump.txt"
+  ignore_errors: yes

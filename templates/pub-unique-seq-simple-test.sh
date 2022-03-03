@@ -18,14 +18,15 @@ cd /root/emqtt-bench/
 
 {
   env TZ={{ script_timezone }} date
-  time ./with-ipaddrs.sh ./emqtt_bench sub \
+  time ./with-ipaddrs.sh ./emqtt_bench pub \
        -c {{ emqtt_bench_number_of_connections }} \
        -i {{ emqtt_bench_interval }} \
+       -I {{ emqtt_bench_pub_interval }} \
        -x {{ emqtt_bench_session_expiry_interval }} \
-       -t 'bench/%c/#' \
+       -t 'bench/%i/test' \
        {{ "--lowmem" if (emqtt_bench_lowmem_mode | default(False) | bool) else "" }} \
        -n "$START_NUM" \
        {{ "--prefix \"" + emqtt_bench_prefix + "\"" if emqtt_bench_prefix is defined else "" }} \
        {{ "--shortids" if (emqtt_bench_shortids | default(False) | bool) else "" }} \
        -h $TARGET 2>&1
-} > "/tmp/$OUTPUT_RECORDING"
+} > "/tmp/$OUTPUT_RECORDING.$LG_NUM.pub"

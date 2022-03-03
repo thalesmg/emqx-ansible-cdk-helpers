@@ -1,0 +1,31 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - define_inventory
+
+- name: stop emqx and clean logs
+  hosts: emqx
+  become: yes
+  become_user: root
+  roles:
+    - stop_emqx
+    - clean_logs
+
+- name: start cores
+  hosts: cores
+  become: yes
+  become_user: root
+  roles:
+    - start_emqx
+
+- name: start replicants
+  hosts: replicants
+  become: yes
+  become_user: root
+  roles:
+    - start_emqx
+
+...

@@ -1,12 +1,25 @@
 #!/usr/bin/env bb
 ;; -*- mode: clojure; -*-
 
-(let [[bastion-ip num-emqx] *command-line-args*
-      emqxs (map #(str "emqx-" % ".int.thalesmg") (range (Integer/parseInt num-emqx)))]
-  (doseq [emqx emqxs]
-    (println (str "ssh"
-                  " -o StrictHostKeyChecking=no"
-                  " -J ec2-user@"
-                  bastion-ip
-                  " ubuntu@"
-                  emqx))))
+(let [[bastion-ip num-emqx num-cores] *command-line-args*
+      emqxs (map #(str "emqx-" % ".int.thalesmg") (range (Integer/parseInt num-emqx)))
+      make-line (fn [emqx]
+                  (str "ssh"
+                       " -o StrictHostKeyChecking=no"
+                       " -J ec2-user@"
+                       bastion-ip
+                       " ubuntu@"
+                       emqx))
+      cores (->> emqxs
+                 (take (Integer/parseInt num-cores))
+                 (map make-line)
+                 (str/join "\n"))
+      replicants (->> emqxs
+                      (drop (Integer/parseInt num-cores))
+                      (map make-line)
+                      (str/join "\n"))
+      all (str/join "\n" [cores replicants])]
+  (spit "par-hosts.txt" all)
+  (spit "cores.txt" cores)
+  (spit "replicants.txt" replicants)
+  (println all))
