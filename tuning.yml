@@ -6,6 +6,13 @@
   roles:
     - define_inventory
 
+- name: configure timezone
+  hosts: emqx:loadgen
+  become: yes
+  become_user: root
+  roles:
+    - set_timezone
+
 - name: config emqx
   hosts: emqx
   become: yes
