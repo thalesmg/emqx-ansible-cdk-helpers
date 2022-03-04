@@ -124,7 +124,7 @@ def pub_sub_1_to_1(procs):
     procs += sub_procs
     log(f"subscribers spawned: {sub_procs}")
     # estimated time for the subscriptions to complete
-    time_to_stabilize_s = round(1.2 * CONN_INTERVAL_MS * NUM_CONNS // 1_000)
+    time_to_stabilize_s = CONN_INTERVAL_MS * NUM_CONNS // 1_000 + 60
     time.sleep(time_to_stabilize_s)
     log("spawning publishers...")
     pub_procs = [
