@@ -38,6 +38,8 @@ SESSION_EXPIRY_INTERVAL : int = {{ emqtt_bench_session_expiry_interval }}
 LOWMEM_MODE : bool = {{ emqtt_bench_lowmem_mode | default(False) | bool }}
 CLIENTID_PREFIX =  {{ "\"" + emqtt_bench_prefix + "\"" if emqtt_bench_prefix is defined else None }}
 USE_SHORTIDS : bool = {{ emqtt_bench_shortids | default(False) | bool }}
+SUB_QoS : int = {{ emqtt_bench_sub_qos | default(0) }}
+PUB_QoS : int = {{ emqtt_bench_pub_qos | default(0) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -77,7 +79,7 @@ def replicant_target(i : int) -> str:
     return target
 
 
-def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str) -> subprocess.Popen:
+def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0) -> subprocess.Popen:
     cwd = "/root/emqtt-bench/"
     script1 = Path(f"{cwd}/with-ipaddrs.sh")
     script2 = Path(f"{cwd}/emqtt_bench")
@@ -90,7 +92,8 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str) -> subprocess.Popen:
         "-x", str(SESSION_EXPIRY_INTERVAL),
         "-t", topic,
         "-n", str(START_N),
-        "-h", replicant_target(i)
+        "-h", replicant_target(i),
+        "-q", str(qos),
     ]
     if LOWMEM_MODE:
         args.append("--lowmem")
@@ -115,17 +118,17 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str) -> subprocess.Popen:
 def pub_sub_1_to_1(procs):
     log("spawning subscribers...")
     sub_procs = [
-        spawn_bench(i, "sub", topic = "bench/%i/#")
+        spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS)
         for i in range(START_N, START_N + NUM_PROCS)
     ]
     procs += sub_procs
     log(f"subscribers spawned: {sub_procs}")
     # estimated time for the subscriptions to complete
-    time_to_stabilize_s = 30 + CONN_INTERVAL_MS * NUM_CONNS // 1_000
+    time_to_stabilize_s = round(1.2 * CONN_INTERVAL_MS * NUM_CONNS // 1_000)
     time.sleep(time_to_stabilize_s)
     log("spawning publishers...")
     pub_procs = [
-        spawn_bench(i, "pub", topic = "bench/%i/test")
+        spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS)
         for i in range(START_N, START_N + NUM_PROCS)
     ]
     procs += pub_procs
