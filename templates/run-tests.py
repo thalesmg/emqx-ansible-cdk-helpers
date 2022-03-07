@@ -82,7 +82,7 @@ def replicant_target(i : int) -> str:
 
 
 def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
-                start_n = START_N) -> subprocess.Popen:
+                start_n : int = START_N, num_conns : int = NUM_CONNS) -> subprocess.Popen:
     cwd = "/root/emqtt-bench/"
     script1 = Path(f"{cwd}/with-ipaddrs.sh")
     script2 = Path(f"{cwd}/emqtt_bench")
@@ -90,7 +90,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         script1,
         script2,
         bench_cmd,
-        "-c", str(NUM_CONNS),
+        "-c", str(num_conns),
         "-i", str(CONN_INTERVAL_MS),
         "-x", str(SESSION_EXPIRY_INTERVAL),
         "-t", topic,
@@ -121,11 +121,13 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
 def pub_sub_1_to_1(procs):
     # start_n for the whole loadgen
     start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
+    num_conns = NUM_CONNS // 2
     log("spawning subscribers...")
     sub_procs = [
         spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg + i * NUM_CONNS)
+                    start_n = start_n_lg + i * NUM_CONNS,
+                    num_conns = num_conns)
         for i in range(NUM_PROCS)
     ]
     procs += sub_procs
@@ -137,7 +139,8 @@ def pub_sub_1_to_1(procs):
     pub_procs = [
         spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg + i * NUM_CONNS)
+                    start_n = start_n_lg + i * NUM_CONNS,
+                    num_conns = num_conns)
         for i in range(NUM_PROCS)
     ]
     procs += pub_procs
