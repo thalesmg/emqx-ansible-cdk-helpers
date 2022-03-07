@@ -1,8 +1,9 @@
 #!/usr/bin/env bb
 ;; -*- mode: clojure; -*-
 
-(let [[bastion-ip num-emqx num-cores] *command-line-args*
+(let [[bastion-ip num-emqx num-cores num-lg] *command-line-args*
       emqxs (map #(str "emqx-" % ".int.thalesmg") (range (Integer/parseInt num-emqx)))
+      loadgens (map #(str "loadgen-" % ".int.thalesmg") (range (Integer/parseInt num-lg)))
       make-line (fn [emqx]
                   (str "ssh"
                        " -o StrictHostKeyChecking=no"
@@ -18,8 +19,12 @@
                       (drop (Integer/parseInt num-cores))
                       (map make-line)
                       (str/join "\n"))
+      lgs (->> loadgens
+               (map make-line)
+               (str/join "\n"))
       all (str/join "\n" [cores replicants])]
   (spit "par-hosts.txt" all)
   (spit "cores.txt" cores)
   (spit "replicants.txt" replicants)
+  (spit "loadgens.txt" lgs)
   (println all))
