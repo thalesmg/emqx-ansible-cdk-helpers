@@ -118,7 +118,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
     return proc
 
 
-def pub_sub_1_to_1(procs):
+def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     # start_n for the whole loadgen
     start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
     # total connections = pubs + subs
@@ -131,7 +131,7 @@ def pub_sub_1_to_1(procs):
                     num_conns = num_conns)
         for i in range(NUM_PROCS)
     ]
-    procs += sub_procs
+    pid_list += sub_procs
     log(f"subscribers spawned: {sub_procs}")
     # estimated time for the subscriptions to complete
     time_to_stabilize_s = CONN_INTERVAL_MS * NUM_CONNS // 1_000 + 120
@@ -144,9 +144,9 @@ def pub_sub_1_to_1(procs):
                     num_conns = num_conns)
         for i in range(NUM_PROCS)
     ]
-    procs += pub_procs
+    pid_list += pub_procs
     log(f"publishers spawned: {pub_procs}")
-    return procs
+    return pid_list
 
 
 def main(args):

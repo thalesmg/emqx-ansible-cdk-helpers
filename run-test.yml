@@ -72,7 +72,9 @@
       shell: "kill {{ test_runner.stdout }}"
       ignore_errors: yes
     - name: REALLY kill the scripts
-      shell: "pgrep beam | xargs kill -9"
+      shell: |
+        pkill -f -9 run-tests.py
+        pkill -f -9 beam.smp
       # shell: "pkill beam"
       ignore_errors: yes
 
