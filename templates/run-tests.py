@@ -26,6 +26,8 @@ CORES : List[str] = [
     {% endfor %}
 ]
 
+LG_NUM : int = {{ loadgen_num }}
+# only for old scripts; doesn't make much sense for newer ones
 START_N : int = {{ start_n }}
 NUM_PROCS : int = {{ num_procs }}
 RESULT_FILE : str = "{{ emqx_script_result_file }}"
@@ -79,7 +81,8 @@ def replicant_target(i : int) -> str:
     return target
 
 
-def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0) -> subprocess.Popen:
+def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
+                start_n = START_N) -> subprocess.Popen:
     cwd = "/root/emqtt-bench/"
     script1 = Path(f"{cwd}/with-ipaddrs.sh")
     script2 = Path(f"{cwd}/emqtt_bench")
@@ -91,7 +94,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0) -> subproces
         "-i", str(CONN_INTERVAL_MS),
         "-x", str(SESSION_EXPIRY_INTERVAL),
         "-t", topic,
-        "-n", str(START_N),
+        "-n", str(start_n),
         "-h", replicant_target(i),
         "-q", str(qos),
     ]
@@ -116,24 +119,30 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0) -> subproces
 
 
 def pub_sub_1_to_1(procs):
+    # start_n for the whole loadgen
+    start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
     log("spawning subscribers...")
     sub_procs = [
-        spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS)
-        for i in range(START_N, START_N + NUM_PROCS)
+        spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS,
+                    # start_n for this process
+                    start_n = start_n_lg + i * NUM_CONNS)
+        for i in range(NUM_PROCS)
     ]
     procs += sub_procs
     log(f"subscribers spawned: {sub_procs}")
     # estimated time for the subscriptions to complete
-    time_to_stabilize_s = CONN_INTERVAL_MS * NUM_CONNS // 1_000 + 60
+    time_to_stabilize_s = CONN_INTERVAL_MS * NUM_CONNS // 1_000 + 120
     time.sleep(time_to_stabilize_s)
     log("spawning publishers...")
     pub_procs = [
-        spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS)
-        for i in range(START_N, START_N + NUM_PROCS)
+        spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
+                    # start_n for this process
+                    start_n = start_n_lg + i * NUM_CONNS)
+        for i in range(NUM_PROCS)
     ]
     procs += pub_procs
     log(f"publishers spawned: {pub_procs}")
-    return sub_procs + pub_procs
+    return procs
 
 
 def main(args):
