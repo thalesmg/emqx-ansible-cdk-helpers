@@ -60,7 +60,7 @@
         start_n: "{{ (loadgen_num * (emqx_test_procs | default(1) | int)) | int }}"
     - name: run the script
       shell: |
-        nohup /root/emqtt-bench/run-tests.py {{ emqx_test_script_file }} 2>&1 | logger -t cluster_test &
+        nohup /root/emqtt-bench/run-tests.py {{ emqx_test_script_file }} 2>&1 | systemd-cat -t cluster_test &
         echo $!
       register: test_runner
     - name: give the scripts some time...

@@ -121,6 +121,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
 def pub_sub_1_to_1(procs):
     # start_n for the whole loadgen
     start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
+    # total connections = pubs + subs
     num_conns = NUM_CONNS // 2
     log("spawning subscribers...")
     sub_procs = [
