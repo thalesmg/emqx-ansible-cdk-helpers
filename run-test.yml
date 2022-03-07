@@ -66,6 +66,8 @@
     - name: give the scripts some time...
       pause:
         seconds: "{{ script_timeout_s | default('300') }}"
+    - debug:
+        var: test_runner
     - name: kill the script
       shell: "kill {{ test_runner.stdout }}"
       ignore_errors: yes
