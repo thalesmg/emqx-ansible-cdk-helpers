@@ -69,7 +69,7 @@ def log(msg : str):
     print(msg)
     prefix = "cluster_test"
     subprocess.run(
-        ["logger", "-t", prefix]
+        ["logger", "-t", prefix, msg]
     )
 
 
