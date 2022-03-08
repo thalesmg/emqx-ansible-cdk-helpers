@@ -17,6 +17,7 @@
       shell: pgrep beam
       register: pgrep_beam_result
       failed_when: pgrep_beam_result.rc != 1
+      changed_when: pgrep_beam_result.rc != 1
   rescue:
     - name: REALLY stop emqx
       shell: "pkill -9 beam.smp"

@@ -68,14 +68,15 @@
     - name: give the scripts some time...
       pause:
         seconds: "{{ script_timeout_s | default('300') }}"
-    - name: kill the script
-      shell: "kill {{ test_runner.stdout }}"
-      ignore_errors: yes
+    # - name: kill the script
+    #   shell: "kill {{ test_runner.stdout }}"
+    #   ignore_errors: yes
     - name: REALLY kill the scripts
+      args:
+        executable: /bin/bash
       shell: |
-        pkill -f -9 run-tests.py || true
         pkill -9 beam.smp || true
-      # shell: "pkill beam"
+        pkill -f -9 run-tests.py || true
       ignore_errors: yes
 
 - name: collect logs
