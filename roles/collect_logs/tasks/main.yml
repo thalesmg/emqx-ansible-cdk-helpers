@@ -2,6 +2,7 @@
 
 - name: ensure local tmp data dir
   delegate_to: localhost
+  become: no
   file:
     path: "./tmp/data"
     state: directory
