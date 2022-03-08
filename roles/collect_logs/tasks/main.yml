@@ -1,5 +1,10 @@
 ---
 
+- name: ensure local tmp data dir
+  delegate_to: localhost
+  file:
+    path: "./tmp/data"
+    state: directory
 - name: produce node_dump
   shell: "/usr/lib/emqx/bin/node_dump"
   register: node_dump_invoke
