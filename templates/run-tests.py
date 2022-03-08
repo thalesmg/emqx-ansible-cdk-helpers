@@ -123,6 +123,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
     # total connections = pubs + subs
     num_conns = NUM_CONNS // 2
+
     log("spawning subscribers...")
     sub_procs = [
         spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS,
@@ -133,9 +134,11 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     ]
     pid_list += sub_procs
     log(f"subscribers spawned: {sub_procs}")
+
     # estimated time for the subscriptions to complete
     time_to_stabilize_s = CONN_INTERVAL_MS * num_conns // 1_000 + 120
     time.sleep(time_to_stabilize_s)
+
     log("spawning publishers...")
     pub_procs = [
         spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
@@ -146,6 +149,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     ]
     pid_list += pub_procs
     log(f"publishers spawned: {pub_procs}")
+
     return pid_list
 
 
