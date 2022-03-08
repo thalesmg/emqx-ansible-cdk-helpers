@@ -73,8 +73,8 @@
       ignore_errors: yes
     - name: REALLY kill the scripts
       shell: |
-        pkill -f -9 run-tests.py
-        pkill -9 beam.smp
+        pkill -f -9 run-tests.py || true
+        pkill -9 beam.smp || true
       # shell: "pkill beam"
       ignore_errors: yes
 
