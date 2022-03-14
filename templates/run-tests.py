@@ -42,6 +42,8 @@ CLIENTID_PREFIX =  {{ "\"" + emqtt_bench_prefix + "\"" if emqtt_bench_prefix is 
 USE_SHORTIDS : bool = {{ emqtt_bench_shortids | default(False) | bool }}
 SUB_QoS : int = {{ emqtt_bench_sub_qos | default(0) }}
 PUB_QoS : int = {{ emqtt_bench_pub_qos | default(0) }}
+MIN_RANDOM_WAIT : int = {{ emqtt_bench_min_random_wait | default(0) }}
+MAX_RANDOM_WAIT : int = {{ emqtt_bench_max_random_wait | default(0) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -105,7 +107,11 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
     if CLIENTID_PREFIX:
         args += ["--prefix", CLIENTID_PREFIX]
     if bench_cmd == "pub":
-        args += ["-I", str(PUB_INTERVAL_MS)]
+        args += [
+            "-I", str(PUB_INTERVAL_MS),
+            "--min-random-wait", str(MIN_RANDOM_WAIT),
+            "--max-random-wait", str(MAX_RANDOM_WAIT),
+        ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
     outfile = open(outfile_path, "w+")
     outfile.writelines([f"# {args}\n\n"])
