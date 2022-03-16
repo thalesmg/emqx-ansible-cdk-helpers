@@ -98,7 +98,9 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         "-x", str(SESSION_EXPIRY_INTERVAL),
         "-t", topic,
         "-n", str(start_n),
-        "-h", replicant_target(start_n + i),
+        # start n varies with i as well, to partition the client_id
+        # space
+        "-h", replicant_target(start_n),
         "-q", str(qos),
         "--num-retry-connect", str(NUM_RETRY_CONNECT),
     ]
