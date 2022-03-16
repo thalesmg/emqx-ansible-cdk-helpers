@@ -14,11 +14,11 @@
       until: '"badrpc,timeout" not in stop_result.stderr'
       failed_when: '"badrpc,timeout" in stop_result.stderr'
     - name: check if emqx really stopped
-      shell: pgrep beam
+      shell: "pgrep -a beam | grep '/usr/lib/emqx' | grep -v remsh"
       register: pgrep_beam_result
       failed_when: pgrep_beam_result.rc != 1
       changed_when: pgrep_beam_result.rc != 1
   rescue:
     - name: REALLY stop emqx
-      shell: "pkill -9 beam.smp"
+      shell: "pgrep -a beam | grep '/usr/lib/emqx' | grep -v remsh | awk '{ print $1; }' | xargs kill -9"
       ignore_errors: yes
