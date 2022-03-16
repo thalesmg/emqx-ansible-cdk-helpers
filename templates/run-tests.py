@@ -44,6 +44,7 @@ SUB_QoS : int = {{ emqtt_bench_sub_qos | default(0) }}
 PUB_QoS : int = {{ emqtt_bench_pub_qos | default(0) }}
 MIN_RANDOM_WAIT : int = {{ emqtt_bench_min_random_wait | default(0) }}
 MAX_RANDOM_WAIT : int = {{ emqtt_bench_max_random_wait | default(0) }}
+NUM_RETRY_CONNECT : int = {{ emqtt_bench_num_retry_connect | default(0) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -99,6 +100,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         "-n", str(start_n),
         "-h", replicant_target(i),
         "-q", str(qos),
+        "--num-retry-connect", str(NUM_RETRY_CONNECT),
     ]
     if LOWMEM_MODE:
         args.append("--lowmem")
