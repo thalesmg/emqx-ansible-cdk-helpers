@@ -136,7 +136,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     sub_procs = [
         spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg + i * NUM_CONNS,
+                    start_n = start_n_lg + i * num_conns,
                     num_conns = num_conns)
         for i in range(NUM_PROCS)
     ]
@@ -151,7 +151,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     pub_procs = [
         spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg + i * NUM_CONNS,
+                    start_n = start_n_lg + i * num_conns,
                     num_conns = num_conns)
         for i in range(NUM_PROCS)
     ]
