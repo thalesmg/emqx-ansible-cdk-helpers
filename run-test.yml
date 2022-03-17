@@ -75,7 +75,7 @@
       args:
         executable: /bin/bash
       shell: |
-        pkill -9 beam.smp || true
+        pkill -9 beam.smp || true;
         pkill -f -9 run-tests.py || true
       ignore_errors: yes
 
