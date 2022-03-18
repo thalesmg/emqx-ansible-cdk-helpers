@@ -42,19 +42,19 @@
     src: "{{ syslog_stat.stat.path }}"
     dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-syslog"
     flat: yes
-- name: find mem ets dumps
-  shell: "ls /tmp/*_mem-ets-dump.txt 2>/dev/null || true"
-  register: mem_ets_dumps
-- name: tar mem ets dumps
-  when: mem_ets_dumps.stdout_lines
-  shell: |
-    cd /tmp
-    tar -cjf {{ emqx_script_result_file }}.mem-ets-dump.tar.bz2 *_mem-ets-dump.txt
-- name: fetch mem ets dumps
-  when: mem_ets_dumps.stdout_lines
-  fetch:
-    src: "/tmp/{{ emqx_script_result_file }}.mem-ets-dump.tar.bz2"
-    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-mem-ets-dump.tar.bz2"
-    flat: yes
+# - name: find mem ets dumps
+#   shell: "ls /tmp/*_mem-ets-dump.txt 2>/dev/null || true"
+#   register: mem_ets_dumps
+# - name: tar mem ets dumps
+#   when: mem_ets_dumps.stdout_lines
+#   shell: |
+#     cd /tmp
+#     tar -cjf {{ emqx_script_result_file }}.mem-ets-dump.tar.bz2 *_mem-ets-dump.txt
+# - name: fetch mem ets dumps
+#   when: mem_ets_dumps.stdout_lines
+#   fetch:
+#     src: "/tmp/{{ emqx_script_result_file }}.mem-ets-dump.tar.bz2"
+#     dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-mem-ets-dump.tar.bz2"
+#     flat: yes
 
 ...
