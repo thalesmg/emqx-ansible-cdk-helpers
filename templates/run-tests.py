@@ -100,9 +100,10 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         "-x", str(SESSION_EXPIRY_INTERVAL),
         "-t", topic,
         "-n", str(start_n),
-        # start n varies with i as well, to partition the client_id
-        # space
-        "-h", replicant_target(start_n),
+        # the input to this MUST vary by one on each process, across
+        # all procs in the same LG, and must be contiguous between all
+        # LGs...
+        "-h", replicant_target(i),
         "-q", str(qos),
         "--num-retry-connect", str(NUM_RETRY_CONNECT),
     ]
@@ -144,7 +145,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
                     # start_n for this process
                     start_n = start_n_lg + i * num_conns,
                     num_conns = num_conns)
-        for i in range(NUM_PROCS)
+        for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
     ]
     pid_list += sub_procs
     log(f"subscribers spawned: {sub_procs}")
