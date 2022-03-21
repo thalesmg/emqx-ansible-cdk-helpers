@@ -45,6 +45,8 @@ PUB_QoS : int = {{ emqtt_bench_pub_qos | default(0) }}
 MIN_RANDOM_WAIT : int = {{ emqtt_bench_min_random_wait | default(0) }}
 MAX_RANDOM_WAIT : int = {{ emqtt_bench_max_random_wait | default(0) }}
 NUM_RETRY_CONNECT : int = {{ emqtt_bench_num_retry_connect | default(0) }}
+# ms
+FORCE_MAJOR_GC_INTERVAL : int = {{ emqtt_bench_force_major_gc_interval | default(0) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -115,10 +117,12 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
             "-I", str(PUB_INTERVAL_MS),
             "--min-random-wait", str(MIN_RANDOM_WAIT),
             "--max-random-wait", str(MAX_RANDOM_WAIT),
+            "--force-major-gc-interval", str(FORCE_MAJOR_GC_INTERVAL),
         ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
     outfile = open(outfile_path, "w+")
-    outfile.writelines([f"# {args}\n\n"])
+    args_str = " ".join(str(a) for a in args)
+    outfile.writelines([f"# {args_str}\n\n"])
     proc = subprocess.Popen(
         args,
         cwd = cwd,
