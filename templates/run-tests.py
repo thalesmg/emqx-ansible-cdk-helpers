@@ -106,6 +106,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         "-h", replicant_target(i),
         "-q", str(qos),
         "--num-retry-connect", str(NUM_RETRY_CONNECT),
+        "--force-major-gc-interval", str(FORCE_MAJOR_GC_INTERVAL),
     ]
     if LOWMEM_MODE:
         args.append("--lowmem")
@@ -118,7 +119,6 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
             "-I", str(PUB_INTERVAL_MS),
             "--min-random-wait", str(MIN_RANDOM_WAIT),
             "--max-random-wait", str(MAX_RANDOM_WAIT),
-            "--force-major-gc-interval", str(FORCE_MAJOR_GC_INTERVAL),
         ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
     outfile = open(outfile_path, "w+")
