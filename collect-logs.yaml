@@ -1,0 +1,34 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - define_inventory
+
+- name: check inputs
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: ensure vars are defined
+      fail:
+        msg: "{{ item }} must be defined!"
+      when: lookup('vars', item) is undefined
+      loop:
+        - emqx_script_result_file
+        - emqx_bastion_server
+        - emqx_script_result_dest
+
+- name: collect logs
+  hosts: emqx
+  become: yes
+  become_user: root
+  roles:
+    - collect_logs
+
+- name: move results
+  hosts: localhost
+  roles:
+    - move_results
+
+...

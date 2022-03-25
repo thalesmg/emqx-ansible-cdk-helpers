@@ -20,7 +20,8 @@
   become_user: root
   tasks:
     - name: remove stdout logs
-      shell: "sudo rm /tmp/*.?ub.*"
+      shell: "rm /tmp/*.?ub.* || true"
+      ignore_errors: yes
 
 - name: start cores
   hosts: cores
