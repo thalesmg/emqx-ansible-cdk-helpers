@@ -10,6 +10,7 @@
   hosts: emqx:loadgen
   become: yes
   become_user: root
+  tags: [timezone]
   roles:
     - set_timezone
 
