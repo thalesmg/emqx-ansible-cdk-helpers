@@ -87,7 +87,8 @@ def replicant_target(i : int) -> str:
 
 
 def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
-                start_n : int = START_N, num_conns : int = NUM_CONNS) -> subprocess.Popen:
+                start_n : int = START_N, num_conns : int = NUM_CONNS,
+                host_shift : int = 0) -> subprocess.Popen:
     cwd = "/root/emqtt-bench/"
     script1 = Path(f"{cwd}/with-ipaddrs.sh")
     script2 = Path(f"{cwd}/emqtt_bench")
@@ -104,7 +105,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         # all procs in the same LG, and must be contiguous between all
         # LGs...
         "-d",
-        "-h", replicant_target(i),
+        "-h", replicant_target(i + host_shift),
         "-q", str(qos),
         "--num-retry-connect", str(NUM_RETRY_CONNECT),
         "--force-major-gc-interval", str(FORCE_MAJOR_GC_INTERVAL),
@@ -163,10 +164,10 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     log("spawning publishers...")
     # shifting only the pubs
     pub_procs = [
-        spawn_bench(i + host_shift, "pub", topic = "bench/%i/test", qos = PUB_QoS,
+        spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
                     # start_n for this process
                     start_n = start_n_lg + i * num_conns,
-                    num_conns = num_conns)
+                    num_conns = num_conns, host_shift=host_shift)
         for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
     ]
     pid_list += pub_procs
