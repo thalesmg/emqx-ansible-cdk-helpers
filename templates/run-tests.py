@@ -134,7 +134,12 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
     return proc
 
 
-def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
+def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
+                   host_shift : int = 0) -> List[subprocess.Popen]:
+    # host_shift is for forcing forwarding between nodes.  If set to a
+    # multiple of the number of nodes, i.e., `host_shift %
+    # len(REPLICANTS) == 0`, then publishing is local to each node.
+
     # start_n for the whole loadgen
     start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
     # total connections = pubs + subs
@@ -156,8 +161,9 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     time.sleep(time_to_stabilize_s)
 
     log("spawning publishers...")
+    # shifting only the pubs
     pub_procs = [
-        spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
+        spawn_bench(i + host_shift, "pub", topic = "bench/%i/test", qos = PUB_QoS,
                     # start_n for this process
                     start_n = start_n_lg + i * num_conns,
                     num_conns = num_conns)
@@ -169,6 +175,20 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     return pid_list
 
 
+def pub_sub_1_to_1_fwd(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
+    return pub_sub_1_to_1(pid_list, host_shift=1)
+
+
+def try_run(fun):
+    procs = []
+    try:
+        fun(procs)
+        time.sleep(TIMEOUT)
+    finally:
+        for p in procs:
+            p.kill()
+
+
 def main(args):
     if args.script in OLD_SCRIPTS:
         procs = run_old_script(args.script)
@@ -178,13 +198,9 @@ def main(args):
             for p in procs:
                 p.kill()
     elif args.script == "pub_sub_1_to_1":
-        procs = []
-        try:
-            pub_sub_1_to_1(procs)
-            time.sleep(TIMEOUT)
-        finally:
-            for p in procs:
-                p.kill()
+        try_run(pub_sub_1_to_1)
+    elif args.script == "pub_sub_1_to_1_fwd":
+        try_run(pub_sub_1_to_1_fwd)
     else:
         print("TODO!!!")
         exit(1)
