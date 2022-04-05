@@ -7,9 +7,10 @@ cd /root/emqx
 rm mix.lock rebar.lock || true
 
 EMQX_BUILDER_IMAGE="ghcr.io/emqx/emqx-builder/5.0-8:1.13.3-24.2.1-1-ubuntu20.04"
-EMQX_BRANCH="perf-test-mnesia-post-commit-hook-patches1"
+EMQX_BRANCH=${1:-"perf-test-mnesia-post-commit-hook-patches1"}
 # EMQX_BRANCH="perf-test-master"
 
+git fetch -a
 git checkout "${EMQX_BRANCH}"
 git pull -r
 
