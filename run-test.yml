@@ -44,6 +44,8 @@
   # strategy: free
   # max_fail_percentage: 0
   tasks:
+    - name: start epmd
+      shell: "epmd -daemon"
     - name: copy scripts
       template:
         src: "{{ item }}"
