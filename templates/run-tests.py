@@ -190,22 +190,26 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
     # this assumes that the bench version being used supports the
     # `--connrate` option and a comma-separated list of hosts in `-h`.
 
+    # FIXME: actually, it's hard to avoid the uneven distribution of
+    # connections at the moment; falling back to the old way...
+
     # start_n for the whole loadgen
     start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
-    # total connections = pubs + subs
     num_conns = NUM_CONNS
+    conn_rate = 0
 
     log("spawning subscribers...")
-    if REPLICANTS:
-        hosts = ",".join(REPLICANTS)
-    else:
-        hosts = ",".join(CORES)
+    # if REPLICANTS:
+    #     hosts = ",".join(REPLICANTS)
+    # else:
+    #     hosts = ",".join(CORES)
     sub_procs = [
-        spawn_bench(start_n_lg, "sub", topic = "bench/%i/#", qos = SUB_QoS,
+        spawn_bench(i, "sub", topic = "bench/test/#", qos = SUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg,
-                    num_conns = num_conns, hosts = hosts,
-                    conn_rate = CONN_RATE)
+                    start_n = start_n_lg + i * num_conns,
+                    num_conns = num_conns, hosts = replicant_target(i),
+                    conn_rate = conn_rate)
+        for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
     ]
     pid_list += sub_procs
     return pid_list
