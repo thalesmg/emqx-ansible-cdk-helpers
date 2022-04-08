@@ -129,7 +129,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
         ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
     outfile = open(outfile_path, "w+")
-    args_str = shlex.join(args)
+    args_str = shlex.join([str(a) for a in args])
     outfile.writelines([f"# {args_str}\n\n"])
     proc = subprocess.Popen(
         args,
@@ -196,7 +196,7 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
     # start_n for the whole loadgen
     start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
     num_conns = NUM_CONNS
-    conn_rate = 0
+    conn_rate = CONN_RATE
 
     log("spawning subscribers...")
     # if REPLICANTS:
