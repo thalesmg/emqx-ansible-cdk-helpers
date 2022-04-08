@@ -5,6 +5,7 @@ import sys
 import subprocess
 from pathlib import Path
 import time
+import shlex
 from typing import List, Literal, Optional
 
 
@@ -128,7 +129,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
         ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
     outfile = open(outfile_path, "w+")
-    args_str = " ".join(str(a) for a in args)
+    args_str = shlex.join(args)
     outfile.writelines([f"# {args_str}\n\n"])
     proc = subprocess.Popen(
         args,
