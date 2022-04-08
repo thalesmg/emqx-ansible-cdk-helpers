@@ -5,7 +5,7 @@ import sys
 import subprocess
 from pathlib import Path
 import time
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 
 OLD_SCRIPTS = [
@@ -47,6 +47,8 @@ MAX_RANDOM_WAIT : int = {{ emqtt_bench_max_random_wait | default(0) }}
 NUM_RETRY_CONNECT : int = {{ emqtt_bench_num_retry_connect | default(0) }}
 # ms
 FORCE_MAJOR_GC_INTERVAL : int = {{ emqtt_bench_force_major_gc_interval | default(0) }}
+# / s
+CONN_RATE : int = {{ emqtt_bench_conn_rate | default(0) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -86,9 +88,9 @@ def replicant_target(i : int) -> str:
     return target
 
 
-def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
+def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
                 start_n : int = START_N, num_conns : int = NUM_CONNS,
-                host_shift : int = 0) -> subprocess.Popen:
+                conn_rate : int = CONN_RATE) -> subprocess.Popen:
     cwd = "/root/emqtt-bench/"
     script1 = Path(f"{cwd}/with-ipaddrs.sh")
     script2 = Path(f"{cwd}/emqtt_bench")
@@ -105,7 +107,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         # all procs in the same LG, and must be contiguous between all
         # LGs...
         "-d",
-        "-h", replicant_target(i + host_shift),
+        "-h", hosts,
         "-q", str(qos),
         "--num-retry-connect", str(NUM_RETRY_CONNECT),
         "--force-major-gc-interval", str(FORCE_MAJOR_GC_INTERVAL),
@@ -116,6 +118,8 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, qos = 0,
         args.append("--shortids")
     if CLIENTID_PREFIX:
         args += ["--prefix", CLIENTID_PREFIX]
+    if CONN_RATE != 0:
+        args += ["--connrate", conn_rate]
     if bench_cmd == "pub":
         args += [
             "-I", str(PUB_INTERVAL_MS),
@@ -151,7 +155,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
         spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS,
                     # start_n for this process
                     start_n = start_n_lg + i * num_conns,
-                    num_conns = num_conns)
+                    num_conns = num_conns, hosts = replicant_target(i))
         for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
     ]
     pid_list += sub_procs
@@ -167,7 +171,8 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
         spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
                     # start_n for this process
                     start_n = start_n_lg + i * num_conns,
-                    num_conns = num_conns, host_shift=host_shift)
+                    num_conns = num_conns,
+                    hosts = replicant_target(i + host_shift))
         for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
     ]
     pid_list += pub_procs
@@ -178,6 +183,31 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
 
 def pub_sub_1_to_1_fwd(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     return pub_sub_1_to_1(pid_list, host_shift=1)
+
+
+def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
+    # this assumes that the bench version being used supports the
+    # `--connrate` option and a comma-separated list of hosts in `-h`.
+
+    # start_n for the whole loadgen
+    start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
+    # total connections = pubs + subs
+    num_conns = NUM_CONNS
+
+    log("spawning subscribers...")
+    if REPLICANTS:
+        hosts = ",".join(REPLICANTS)
+    else:
+        hosts = ",".join(CORES)
+    sub_procs = [
+        spawn_bench(start_n_lg, "sub", topic = "bench/%i/#", qos = SUB_QoS,
+                    # start_n for this process
+                    start_n = start_n_lg,
+                    num_conns = num_conns, hosts = hosts,
+                    conn_rate = CONN_RATE)
+    ]
+    pid_list += sub_procs
+    return pid_list
 
 
 def try_run(fun):
@@ -202,6 +232,8 @@ def main(args):
         try_run(pub_sub_1_to_1)
     elif args.script == "pub_sub_1_to_1_fwd":
         try_run(pub_sub_1_to_1_fwd)
+    elif args.script == "sub_single_wildcard":
+        try_run(sub_single_wildcard)
     else:
         print("TODO!!!")
         exit(1)
