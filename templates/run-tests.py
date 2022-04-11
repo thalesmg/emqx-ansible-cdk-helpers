@@ -289,8 +289,8 @@ def main(args):
         finally:
             for p in procs:
                 p.kill()
-    elif callable(locals().get(args.script)):
-        fun = locals().get(args.script)
+    elif callable(globals().get(args.script)):
+        fun = globals().get(args.script)
         try_run(fun)
     else:
         print("TODO!!!")
