@@ -27,6 +27,7 @@ CORES : List[str] = [
     {% endfor %}
 ]
 
+TOTAL_NUM_LG : int = {{ emqx_loadgen_num }}
 LG_NUM : int = {{ loadgen_num }}
 # only for old scripts; doesn't make much sense for newer ones
 START_N : int = {{ start_n }}
@@ -87,6 +88,35 @@ def replicant_target(i : int) -> str:
     else:
         target = CORES[i % len(CORES)]
     return target
+
+
+def host_targets() -> str:
+    if REPLICANTS:
+        targets = ",".join(REPLICANTS)
+    else:
+        targets = ",".join(CORES)
+    return targets
+
+
+def params_for_lg(total_lg_num, num_targets,
+                  total_connections, desired_total_conn_rate):
+    assert total_connections >= total_lg_num, "too few connetions per LG"
+    conns_per_lg = total_connections // total_lg_num
+    conns_per_target_lg = conns_per_lg // num_targets
+    # might loose a few to keep it even.
+    conns_per_lg = conns_per_target_lg * num_targets
+
+    conn_rate_per_lg = desired_total_conn_rate // total_lg_num
+    start_n_lg = total_lg_num * conns_per_lg
+    start_nums_per_lg = [
+        start_n_lg + i * conns_per_lg
+        for i in range(total_lg_num)
+    ]
+    return {
+        "num_conns": conns_per_lg,
+        "conn_rate": conn_rate_per_lg,
+        "start_nums": start_nums_per_lg,
+    }
 
 
 def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
@@ -193,23 +223,19 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
     # FIXME: actually, it's hard to avoid the uneven distribution of
     # connections at the moment; falling back to the old way...
 
-    # start_n for the whole loadgen
-    start_n_lg = LG_NUM * NUM_PROCS * NUM_CONNS
-    num_conns = NUM_CONNS
+    total_num_conns = NUM_CONNS
     conn_rate = CONN_RATE
 
     log("spawning subscribers...")
-    # if REPLICANTS:
-    #     hosts = ",".join(REPLICANTS)
-    # else:
-    #     hosts = ",".join(CORES)
+    targets = host_targets()
+    num_targets = len(targets)
+    params = params_for_lg(TOTAL_NUM_LG, num_targets, total_num_conns, conn_rate)
     sub_procs = [
-        spawn_bench(i, "sub", topic = "bench/test/#", qos = SUB_QoS,
+        spawn_bench(LG_NUM, "sub", topic = "bench/test/#", qos = SUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg + i * num_conns,
-                    num_conns = num_conns, hosts = replicant_target(i),
-                    conn_rate = conn_rate)
-        for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
+                    start_n = params["start_nums"][LG_NUM],
+                    num_conns = params["num_conns"], hosts = targets,
+                    conn_rate = params["conn_rate"])
     ]
     pid_list += sub_procs
     return pid_list
