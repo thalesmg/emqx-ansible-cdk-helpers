@@ -150,7 +150,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
     if CLIENTID_PREFIX:
         args += ["--prefix", CLIENTID_PREFIX]
     if CONN_RATE != 0:
-        args += ["--connrate", conn_rate]
+        args += ["--connrate", str(conn_rate)]
     if bench_cmd == "pub":
         args += [
             "-I", str(PUB_INTERVAL_MS),
