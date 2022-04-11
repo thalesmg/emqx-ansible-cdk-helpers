@@ -183,13 +183,19 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     # total connections = pubs + subs
     num_conns = NUM_CONNS // 2
 
+    targets = host_targets()
+    num_targets = len(targets)
+    conn_rate = CONN_RATE
+    params = params_for_lg(TOTAL_NUM_LG, num_targets, num_conns, conn_rate)
+
     log("spawning subscribers...")
     sub_procs = [
-        spawn_bench(i, "sub", topic = "bench/%i/#", qos = SUB_QoS,
+        spawn_bench(LG_NUM, "sub", topic = "bench/%i/#", qos = SUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg + i * num_conns,
-                    num_conns = num_conns, hosts = replicant_target(i))
-        for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
+                    start_n = params["start_nums"][LG_NUM],
+                    num_conns = params["num_conns"], hosts = targets,
+                    conn_rate = params["conn_rate"],
+                    )
     ]
     pid_list += sub_procs
     log(f"subscribers spawned: {sub_procs}")
@@ -201,12 +207,12 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     log("spawning publishers...")
     # shifting only the pubs
     pub_procs = [
-        spawn_bench(i, "pub", topic = "bench/%i/test", qos = PUB_QoS,
+        spawn_bench(LG_NUM, "pub", topic = "bench/%i/test", qos = PUB_QoS,
                     # start_n for this process
-                    start_n = start_n_lg + i * num_conns,
-                    num_conns = num_conns,
-                    hosts = replicant_target(i + host_shift))
-        for i in range(LG_NUM * NUM_PROCS, (LG_NUM + 1) * NUM_PROCS)
+                    start_n = params["start_nums"][LG_NUM],
+                    num_conns = params["num_conns"], hosts = targets,
+                    conn_rate = params["conn_rate"],
+                    )
     ]
     pid_list += pub_procs
     log(f"publishers spawned: {pub_procs}")
@@ -234,7 +240,8 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
                     # start_n for this process
                     start_n = params["start_nums"][LG_NUM],
                     num_conns = params["num_conns"], hosts = targets,
-                    conn_rate = params["conn_rate"])
+                    conn_rate = params["conn_rate"],
+                    )
     ]
     pid_list += sub_procs
     log(f"spawned subscribers: {pid_list}")
