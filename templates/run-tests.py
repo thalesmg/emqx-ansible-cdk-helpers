@@ -264,7 +264,8 @@ def sub_single_topic_bucket(pid_list : List[subprocess.Popen],
                     num_conns = params["num_conns"],
                     hosts = targets,
                     conn_rate = params["conn_rate"])
-        for i in range(num_buckets)
+        # +1 to match erlang's 1 index convention in the benches...
+        for i in range(1, num_buckets + 1)
     ]
     pid_list += sub_procs
     log(f"spawned subscribers: {pid_list}")
