@@ -201,7 +201,10 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     log(f"subscribers spawned: {sub_procs}")
 
     # estimated time for the subscriptions to complete
-    time_to_stabilize_s = CONN_INTERVAL_MS * num_conns // 1_000 + 120
+    if conn_rate != 0:
+        time_to_stabilize_s = num_conns / conn_rate + 120
+    else:
+        time_to_stabilize_s = CONN_INTERVAL_MS * num_conns // 1_000 + 120
     time.sleep(time_to_stabilize_s)
 
     log("spawning publishers...")
