@@ -241,8 +241,9 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
     return pid_list
 
 
-def sub_single_topic_bucket(pid_list : List[subprocess.Popen],
-                            num_buckets : int = NUM_BUCKETS) -> List[subprocess.Popen]:
+def single_topic_bucket(action : BenchCmd,
+                        pid_list : List[subprocess.Popen],
+                        num_buckets : int = NUM_BUCKETS) -> List[subprocess.Popen]:
     # this assumes that the bench version being used supports the
     # `--connrate` option and a comma-separated list of hosts in `-h`.
 
@@ -250,14 +251,23 @@ def sub_single_topic_bucket(pid_list : List[subprocess.Popen],
     num_conns_per_bucket = total_num_conns // num_buckets
     conn_rate_per_bucket = CONN_RATE // num_buckets
 
-    log(f"spawning subscribers for {num_buckets} buckets...")
+    if action == "sub":
+        things = "subscribers"
+        qos = SUB_QoS
+    elif action == "pub":
+        things = "publishers"
+        qos = PUB_QoS
+    else:
+        raise RuntimeError("bad action")
+
+    log(f"spawning {things} for {num_buckets} buckets...")
     targets = host_targets()
     num_targets = len(targets)
     params = params_for_lg(TOTAL_NUM_LG, num_targets,
                            num_conns_per_bucket, conn_rate_per_bucket)
     sub_procs = [
-        spawn_bench(LG_NUM, "sub", topic = f"bench/test/{i}",
-                    qos = SUB_QoS,
+        spawn_bench(LG_NUM, action, topic = f"bench/test/{i}",
+                    qos = qos,
                     # start_n for this process
                     # FIXME: wrong for more than 1 bucket...
                     start_n = params["start_nums"][LG_NUM],
@@ -268,8 +278,18 @@ def sub_single_topic_bucket(pid_list : List[subprocess.Popen],
         for i in range(1, num_buckets + 1)
     ]
     pid_list += sub_procs
-    log(f"spawned subscribers: {pid_list}")
+    log(f"spawned {things}: {pid_list}")
     return pid_list
+
+
+def sub_single_topic_bucket(pid_list : List[subprocess.Popen],
+                            num_buckets : int = NUM_BUCKETS) -> List[subprocess.Popen]:
+    return single_topic_bucket("sub", pid_list, num_buckets)
+
+
+def pub_single_topic_bucket(pid_list : List[subprocess.Popen],
+                            num_buckets : int = NUM_BUCKETS) -> List[subprocess.Popen]:
+    return single_topic_bucket("pub", pid_list, num_buckets)
 
 
 def try_run(fun):
