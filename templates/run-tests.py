@@ -289,12 +289,9 @@ def main(args):
         finally:
             for p in procs:
                 p.kill()
-    elif args.script == "pub_sub_1_to_1":
-        try_run(pub_sub_1_to_1)
-    elif args.script == "pub_sub_1_to_1_fwd":
-        try_run(pub_sub_1_to_1_fwd)
-    elif args.script == "sub_single_wildcard":
-        try_run(sub_single_wildcard)
+    elif callable(locals().get(args.script)):
+        fun = locals().get(args.script)
+        try_run(fun)
     else:
         print("TODO!!!")
         exit(1)
