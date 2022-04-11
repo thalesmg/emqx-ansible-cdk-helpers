@@ -51,6 +51,7 @@ NUM_RETRY_CONNECT : int = {{ emqtt_bench_num_retry_connect | default(0) }}
 FORCE_MAJOR_GC_INTERVAL : int = {{ emqtt_bench_force_major_gc_interval | default(0) }}
 # / s
 CONN_RATE : int = {{ emqtt_bench_conn_rate | default(0) }}
+NUM_BUCKETS : int = {{ emqtt_bench_num_buckets | default(1) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -98,8 +99,8 @@ def host_targets() -> str:
     return targets
 
 
-def params_for_lg(total_lg_num, num_targets,
-                  total_connections, desired_total_conn_rate):
+def params_for_lg(total_lg_num : int, num_targets : int,
+                  total_connections : int, desired_total_conn_rate : int):
     assert total_connections >= total_lg_num, "too few connetions per LG"
     conns_per_lg = total_connections // total_lg_num
     conns_per_target_lg = conns_per_lg // num_targets
@@ -108,6 +109,7 @@ def params_for_lg(total_lg_num, num_targets,
 
     conn_rate_per_lg = desired_total_conn_rate // total_lg_num
     start_n_lg = total_lg_num * conns_per_lg
+    # FIXME: wrong for more than 1 bucket...
     start_nums_per_lg = [
         start_n_lg + i * conns_per_lg
         for i in range(total_lg_num)
@@ -220,9 +222,6 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
     # this assumes that the bench version being used supports the
     # `--connrate` option and a comma-separated list of hosts in `-h`.
 
-    # FIXME: actually, it's hard to avoid the uneven distribution of
-    # connections at the moment; falling back to the old way...
-
     total_num_conns = NUM_CONNS
     conn_rate = CONN_RATE
 
@@ -238,6 +237,37 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
                     conn_rate = params["conn_rate"])
     ]
     pid_list += sub_procs
+    log(f"spawned subscribers: {pid_list}")
+    return pid_list
+
+
+def sub_single_topic_bucket(pid_list : List[subprocess.Popen],
+                            num_buckets : int = NUM_BUCKETS) -> List[subprocess.Popen]:
+    # this assumes that the bench version being used supports the
+    # `--connrate` option and a comma-separated list of hosts in `-h`.
+
+    total_num_conns = NUM_CONNS
+    num_conns_per_bucket = total_num_conns // num_buckets
+    conn_rate_per_bucket = CONN_RATE // num_buckets
+
+    log(f"spawning subscribers for {num_buckets} buckets...")
+    targets = host_targets()
+    num_targets = len(targets)
+    params = params_for_lg(TOTAL_NUM_LG, num_targets,
+                           num_conns_per_bucket, conn_rate_per_bucket)
+    sub_procs = [
+        spawn_bench(LG_NUM, "sub", topic = f"bench/test/{i}",
+                    qos = SUB_QoS,
+                    # start_n for this process
+                    # FIXME: wrong for more than 1 bucket...
+                    start_n = params["start_nums"][LG_NUM],
+                    num_conns = params["num_conns"],
+                    hosts = targets,
+                    conn_rate = params["conn_rate"])
+        for i in range(num_buckets)
+    ]
+    pid_list += sub_procs
+    log(f"spawned subscribers: {pid_list}")
     return pid_list
 
 
