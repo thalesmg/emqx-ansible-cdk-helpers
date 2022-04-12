@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 import time
 import shlex
+import itertools
 from typing import List, Literal, Optional
 
 
@@ -92,12 +93,27 @@ def replicant_target(i : int) -> str:
     return target
 
 
-def host_targets() -> str:
+def drop(iterable, n):
+    next(itertools.islice(iterable, n, n), None)
+
+
+def take(iterable, n):
+    return list(itertools.islice(iterable, n))
+
+
+def rotate(xs, n):
+    nx = len(xs)
+    return take(drop(itertools.cycle(xs), n), nx)
+
+
+def host_targets(host_shift : int = 0) -> str:
     if REPLICANTS:
-        targets = ",".join(REPLICANTS)
+        targets = rotate(REPLICANTS, host_shift)
+        targets_str = ",".join(targets)
     else:
-        targets = ",".join(CORES)
-    return targets
+        targets = rotate(CORES, host_shift)
+        targets_str = ",".join(targets)
+    return targets_str
 
 
 def params_for_lg(total_lg_num : int, num_targets : int,
@@ -184,7 +200,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     # total connections = pubs + subs
     num_conns = NUM_CONNS // 2
 
-    targets = host_targets()
+    targets = host_targets(host_shift)
     num_targets = len(targets)
     conn_rate = CONN_RATE
     pub_topic = "bench/%i/test"
@@ -264,7 +280,7 @@ def pub_sub_1_to_1_fwd(pid_list : List[subprocess.Popen]) -> List[subprocess.Pop
 
 
 def pub_sub_1_to_1_no_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
-    return pub_sub_1_to_1(pid_list, is_wildcard=False)
+    return pub_sub_1_to_1(pid_list, is_wildcard=False, host_shift=1)
 
 
 def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
