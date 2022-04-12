@@ -202,8 +202,10 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     # total connections = pubs + subs
     num_conns = NUM_CONNS // 2
 
-    targets = host_targets(host_shift)
-    num_targets = len(targets)
+    sub_targets = host_targets(host_shift=0)
+    num_targets = len(sub_targets)
+    pub_targets = host_targets(host_shift=host_shift)
+
     conn_rate = CONN_RATE
     pub_topic = "bench/%i/test"
     if is_wildcard:
@@ -217,7 +219,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
         spawn_bench(LG_NUM, "sub", topic = sub_topic, qos = SUB_QoS,
                     # start_n for this process
                     start_n = params["start_nums"][LG_NUM],
-                    num_conns = params["num_conns"], hosts = targets,
+                    num_conns = params["num_conns"], hosts = sub_targets,
                     conn_rate = params["conn_rate"],
                     )
     ]
@@ -237,7 +239,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
         spawn_bench(LG_NUM, "pub", topic = pub_topic, qos = PUB_QoS,
                     # start_n for this process
                     start_n = params["start_nums"][LG_NUM],
-                    num_conns = params["num_conns"], hosts = targets,
+                    num_conns = params["num_conns"], hosts = pub_targets,
                     conn_rate = params["conn_rate"],
                     )
     ]
