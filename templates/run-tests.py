@@ -175,7 +175,8 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
 
 
 def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
-                   host_shift : int = 0) -> List[subprocess.Popen]:
+                   host_shift : int = 0,
+                   is_wildcard : bool = True) -> List[subprocess.Popen]:
     # host_shift is for forcing forwarding between nodes.  If set to a
     # multiple of the number of nodes, i.e., `host_shift %
     # len(REPLICANTS) == 0`, then publishing is local to each node.
@@ -186,11 +187,16 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     targets = host_targets()
     num_targets = len(targets)
     conn_rate = CONN_RATE
+    pub_topic = "bench/%i/test"
+    if is_wildcard:
+        sub_topic = "bench/%i/#"
+    else:
+        sub_topic = pub_topic
     params = params_for_lg(TOTAL_NUM_LG, num_targets, num_conns, conn_rate)
 
     log("spawning subscribers...")
     sub_procs = [
-        spawn_bench(LG_NUM, "sub", topic = "bench/%i/#", qos = SUB_QoS,
+        spawn_bench(LG_NUM, "sub", topic = sub_topic, qos = SUB_QoS,
                     # start_n for this process
                     start_n = params["start_nums"][LG_NUM],
                     num_conns = params["num_conns"], hosts = targets,
@@ -210,7 +216,7 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     log("spawning publishers...")
     # shifting only the pubs
     pub_procs = [
-        spawn_bench(LG_NUM, "pub", topic = "bench/%i/test", qos = PUB_QoS,
+        spawn_bench(LG_NUM, "pub", topic = pub_topic, qos = PUB_QoS,
                     # start_n for this process
                     start_n = params["start_nums"][LG_NUM],
                     num_conns = params["num_conns"], hosts = targets,
@@ -255,6 +261,10 @@ def pub_sub_1_to_1_only_pubs(pid_list : List[subprocess.Popen]) -> List[subproce
 
 def pub_sub_1_to_1_fwd(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     return pub_sub_1_to_1(pid_list, host_shift=1)
+
+
+def pub_sub_1_to_1_no_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
+    return pub_sub_1_to_1(pid_list, is_wildcard=False)
 
 
 def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
