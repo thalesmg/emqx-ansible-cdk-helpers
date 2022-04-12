@@ -93,7 +93,7 @@ def replicant_target(i : int) -> str:
     return target
 
 
-def drop(iterable, n):
+def consume(iterable, n):
     next(itertools.islice(iterable, n, n), None)
 
 
@@ -103,7 +103,9 @@ def take(iterable, n):
 
 def rotate(xs, n):
     nx = len(xs)
-    return take(drop(itertools.cycle(xs), n), nx)
+    cic = itertools.cycle(xs)
+    consume(cic, n)
+    return take(cic, nx)
 
 
 def host_targets(host_shift : int = 0) -> str:
