@@ -54,6 +54,7 @@ FORCE_MAJOR_GC_INTERVAL : int = {{ emqtt_bench_force_major_gc_interval | default
 CONN_RATE : int = {{ emqtt_bench_conn_rate | default(0) }}
 NUM_BUCKETS : int = {{ emqtt_bench_num_buckets | default(1) }}
 PAYLOAD_SIZE : int = {{ emqtt_bench_payload_size | default(256) }}
+NUM_INFLIGHT : int = {{ emqtt_bench_num_inflight | default(1) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -178,6 +179,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
             "--min-random-wait", str(MIN_RANDOM_WAIT),
             "--max-random-wait", str(MAX_RANDOM_WAIT),
             "-s", str(PAYLOAD_SIZE),
+            "-F", str(NUM_INFLIGHT),
         ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
     outfile = open(outfile_path, "w+")
