@@ -285,7 +285,7 @@ def pub_sub_1_to_1_fwd(pid_list : List[subprocess.Popen]) -> List[subprocess.Pop
     return pub_sub_1_to_1(pid_list, host_shift=1)
 
 
-def pub_sub_1_to_1_no_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
+def pub_sub_1_to_1_fwd_no_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     return pub_sub_1_to_1(pid_list, is_wildcard=False, host_shift=1)
 
 
