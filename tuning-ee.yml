@@ -1,0 +1,75 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - define_inventory
+
+- name: configure timezone
+  hosts: emqx:loadgen
+  become: yes
+  become_user: root
+  tags: [timezone]
+  roles:
+    - set_timezone
+
+- name: config emqx
+  hosts: emqx
+  become: yes
+  become_user: root
+  tasks:
+    - name: apply tuning to emqx | set kernel parameters
+      script: ./files/tuning-emqx.sh
+    - name: set db backend configs
+      block:
+        - name: set facts
+          set_fact:
+            emqx_db_role: "{{ 'core' if inventory_hostname in cores else 'replicant' }}"
+        - name: ensure etc directory
+          file:
+            path: /etc/emqx
+            state: directory
+        - name: include ad-hoc overrides
+          lineinfile:
+            path: "/etc/emqx/emqx.conf"
+            insertafter: EOF
+            regex: 'include "ad-hoc-overrides\.conf"'
+            line: 'include /etc/emqx/ad-hoc-overrides.conf'
+        - name: set ad-hoc-overrides.conf
+          template:
+            src: ad-hoc-overrides.conf.ee
+            dest: /etc/emqx/ad-hoc-overrides.conf
+          notify:
+            - restart emqx
+          register: ad_hoc_override_update
+      when: emqx_db_backend is defined and emqx_num_cores is defined
+      vars:
+        cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
+        replicants: "{{ groups['emqx'][(emqx_num_cores | int):] }}"
+    - name: increase LimitNOFILE in emqx.service
+      lineinfile:
+        path: "/lib/systemd/system/emqx.service"
+        regexp: "^LimitNOFILE"
+        line: "LimitNOFILE=1000000000"
+      notify:
+        - restart emqx
+  handlers:
+    - name: restart emqx
+      systemd:
+        name: emqx
+        state: restarted
+        # state: reloaded
+        daemon_reload: yes
+
+# - name: apply tuning to loadgen
+#   hosts: loadgen
+#   become: yes
+#   become_user: root
+#   tasks:
+#     - name: set kernel parameters
+#       script: ./files/tuning-loadgen.sh
+
+- import_playbook: full-restart.yaml
+
+...

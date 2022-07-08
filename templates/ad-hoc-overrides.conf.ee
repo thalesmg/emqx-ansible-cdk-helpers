@@ -1,0 +1,7 @@
+listener.ssl.external.acceptors = 128
+listener.ssl.external.max_connections = 10240000
+listener.ssl.external.max_conn_rate = 10000
+
+listener.tcp.external.acceptors = 128
+listener.tcp.external.max_connections = 10240000
+listener.tcp.external.max_conn_rate = 10000
