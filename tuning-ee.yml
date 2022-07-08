@@ -34,15 +34,39 @@
           lineinfile:
             path: "/etc/emqx/emqx.conf"
             insertafter: EOF
-            regex: 'include "ad-hoc-overrides\.conf"'
+            regex: 'include /etc/emqx/ad-hoc-overrides\.conf'
             line: 'include /etc/emqx/ad-hoc-overrides.conf'
         - name: set ad-hoc-overrides.conf
           template:
             src: ad-hoc-overrides.conf.ee
             dest: /etc/emqx/ad-hoc-overrides.conf
-          notify:
-            - restart emqx
+          # notify:
+          #   - restart emqx
           register: ad_hoc_override_update
+        - name: patch listeners.conf | tcp max conn
+          path: /etc/emqx/listeners.conf
+          regex: '^#? *listener\.tcp\.external\.max_connections = '
+          line: 'listener.tcp.external.max_connections = 10240000'
+        - name: patch listeners.conf | tcp max conn rate
+          path: /etc/emqx/listeners.conf
+          regex: '^#? *listener\.tcp\.external\.max_conn_rate = '
+          line: 'listener.tcp.external.max_conn_rate = 10000'
+        - name: patch listeners.conf | tcp acceptors
+          path: /etc/emqx/listeners.conf
+          regex: '^#? *listener\.tcp\.external\.acceptors = '
+          line: 'listener.tcp.external.acceptors = 128'
+        - name: patch listeners.conf | ssl max conn
+          path: /etc/emqx/listeners.conf
+          regex: '^#? *listener\.ssl\.external\.max_connections = '
+          line: 'listener.ssl.external.max_connections = 10240000'
+        - name: patch listeners.conf | ssl max conn rate
+          path: /etc/emqx/listeners.conf
+          regex: '^#? *listener\.ssl\.external\.max_conn_rate = '
+          line: 'listener.ssl.external.max_conn_rate = 10000'
+        - name: patch listeners.conf | ssl acceptors
+          path: /etc/emqx/listeners.conf
+          regex: '^#? *listener\.ssl\.external\.acceptors = '
+          line: 'listener.ssl.external.acceptors = 128'
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
@@ -52,15 +76,15 @@
         path: "/lib/systemd/system/emqx.service"
         regexp: "^LimitNOFILE"
         line: "LimitNOFILE=1000000000"
-      notify:
-        - restart emqx
-  handlers:
-    - name: restart emqx
-      systemd:
-        name: emqx
-        state: restarted
-        # state: reloaded
-        daemon_reload: yes
+      # notify:
+      #   - restart emqx
+  # handlers:
+  #   - name: restart emqx
+  #     systemd:
+  #       name: emqx
+  #       state: restarted
+  #       # state: reloaded
+  #       daemon_reload: yes
 
 # - name: apply tuning to loadgen
 #   hosts: loadgen
