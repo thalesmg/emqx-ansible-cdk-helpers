@@ -43,27 +43,27 @@
           # notify:
           #   - restart emqx
           register: ad_hoc_override_update
-        - name: patch listeners.conf | tcp max conn
+        - name: patch listeners.conf - tcp max conn
           path: /etc/emqx/listeners.conf
           regex: '^#? *listener\.tcp\.external\.max_connections = '
           line: 'listener.tcp.external.max_connections = 10240000'
-        - name: patch listeners.conf | tcp max conn rate
+        - name: patch listeners.conf - tcp max conn rate
           path: /etc/emqx/listeners.conf
           regex: '^#? *listener\.tcp\.external\.max_conn_rate = '
           line: 'listener.tcp.external.max_conn_rate = 10000'
-        - name: patch listeners.conf | tcp acceptors
+        - name: patch listeners.conf - tcp acceptors
           path: /etc/emqx/listeners.conf
           regex: '^#? *listener\.tcp\.external\.acceptors = '
           line: 'listener.tcp.external.acceptors = 128'
-        - name: patch listeners.conf | ssl max conn
+        - name: patch listeners.conf - ssl max conn
           path: /etc/emqx/listeners.conf
           regex: '^#? *listener\.ssl\.external\.max_connections = '
           line: 'listener.ssl.external.max_connections = 10240000'
-        - name: patch listeners.conf | ssl max conn rate
+        - name: patch listeners.conf - ssl max conn rate
           path: /etc/emqx/listeners.conf
           regex: '^#? *listener\.ssl\.external\.max_conn_rate = '
           line: 'listener.ssl.external.max_conn_rate = 10000'
-        - name: patch listeners.conf | ssl acceptors
+        - name: patch listeners.conf - ssl acceptors
           path: /etc/emqx/listeners.conf
           regex: '^#? *listener\.ssl\.external\.acceptors = '
           line: 'listener.ssl.external.acceptors = 128'
