@@ -18,7 +18,7 @@ OLD_SCRIPTS = [
 NUM_CORES : int = {{ emqx_num_cores }}
 CLUSTER_NAME : str = "{{ emqx_cluster_name }}"
 REPLICANTS : List[str] = [
-    {% for replicant_host in groups['replicants'] %}
+    {% for replicant_host in (groups['replicants'] | default([])) %}
     "{{ replicant_host }}",
     {% endfor %}
 ]
