@@ -46,38 +46,43 @@
         - name: patch listeners.conf - tcp max conn
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#? *listener\.tcp\.external\.max_connections = '
+            regex: '^#* *listener\.tcp\.external\.max_connections = '
             line: 'listener.tcp.external.max_connections = 10240000'
         - name: patch listeners.conf - tcp max conn rate
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#? *listener\.tcp\.external\.max_conn_rate = '
+            regex: '^#* *listener\.tcp\.external\.max_conn_rate = '
             line: 'listener.tcp.external.max_conn_rate = 10000'
         - name: patch listeners.conf - tcp acceptors
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#? *listener\.tcp\.external\.acceptors = '
+            regex: '^#* *listener\.tcp\.external\.acceptors = '
             line: 'listener.tcp.external.acceptors = 128'
         - name: patch listeners.conf - ssl max conn
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#? *listener\.ssl\.external\.max_connections = '
+            regex: '^#* *listener\.ssl\.external\.max_connections = '
             line: 'listener.ssl.external.max_connections = 10240000'
         - name: patch listeners.conf - ssl max conn rate
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#? *listener\.ssl\.external\.max_conn_rate = '
+            regex: '^#* *listener\.ssl\.external\.max_conn_rate = '
             line: 'listener.ssl.external.max_conn_rate = 10000'
         - name: patch listeners.conf - ssl acceptors
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#? *listener\.ssl\.external\.acceptors = '
+            regex: '^#* *listener\.ssl\.external\.acceptors = '
             line: 'listener.ssl.external.acceptors = 128'
         - name: patch listeners.conf - ssl verify
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#? *listener\.ssl\.external\.verify = '
+            regex: '^#* *listener\.ssl\.external\.verify = '
             line: 'listener.ssl.external.verify = {{ emqx_server_ssl_verify | default("verify_none") }}'
+        - name: patch listeners.conf - ssl cacert
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.ssl\.external\.cacert = '
+            line: 'listener.ssl.external.cacert = /etc/emqx/certs/cacert.pem'
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
