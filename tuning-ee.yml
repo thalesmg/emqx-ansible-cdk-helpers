@@ -73,6 +73,11 @@
             path: /etc/emqx/listeners.conf
             regex: '^#? *listener\.ssl\.external\.acceptors = '
             line: 'listener.ssl.external.acceptors = 128'
+        - name: patch listeners.conf - ssl verify
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#? *listener\.ssl\.external\.verify = '
+            line: 'listener.ssl.external.verify = {{ emqx_server_ssl_verify | default("verify_none") }}'
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
