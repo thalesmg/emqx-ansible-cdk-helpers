@@ -57,6 +57,8 @@ PAYLOAD_SIZE : int = {{ emqtt_bench_payload_size | default(256) }}
 NUM_INFLIGHT : int = {{ emqtt_bench_num_inflight | default(1) }}
 USE_SSL : bool = {{ emqtt_bench_use_ssl | default(False) | bool }}
 WAIT_BEFORE_PUBLISHING : bool = {{ emqtt_bench_wait_before_publishing | default(False) | bool }}
+# s
+RELAXATION_PERIOD : int = {{ emqtt_bench_relaxation_period | default(120) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -126,7 +128,7 @@ def params_for_lg(total_lg_num : int, num_targets : int,
     assert total_connections >= total_lg_num, "too few connetions per LG"
     conns_per_lg = total_connections // total_lg_num
     conns_per_target_lg = conns_per_lg // num_targets
-    # might loose a few to keep it even.
+    # might lose a few to keep it even.
     conns_per_lg = conns_per_target_lg * num_targets
 
     conn_rate_per_lg = desired_total_conn_rate // total_lg_num
@@ -241,9 +243,9 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
 
     # estimated time for the subscriptions to complete
     if conn_rate != 0:
-        time_to_stabilize_s = num_conns / conn_rate + 120
+        time_to_stabilize_s = num_conns / conn_rate + RELAXATION_PERIOD
     else:
-        time_to_stabilize_s = CONN_INTERVAL_MS * num_conns // 1_000 + 120
+        time_to_stabilize_s = CONN_INTERVAL_MS * num_conns // 1_000 + RELAXATION_PERIOD
     time.sleep(time_to_stabilize_s)
 
     log("spawning publishers...")
