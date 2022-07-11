@@ -56,6 +56,7 @@ NUM_BUCKETS : int = {{ emqtt_bench_num_buckets | default(1) }}
 PAYLOAD_SIZE : int = {{ emqtt_bench_payload_size | default(256) }}
 NUM_INFLIGHT : int = {{ emqtt_bench_num_inflight | default(1) }}
 USE_SSL : bool = {{ emqtt_bench_use_ssl | default(False) | bool }}
+WAIT_BEFORE_PUBLISHING : bool = {{ emqtt_bench_wait_before_publishing | default(False) | bool }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -168,6 +169,8 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
     ]
     if LOWMEM_MODE:
         args.append("--lowmem")
+    if WAIT_BEFORE_PUBLISHING:
+        args.append("--wait-before-publishing")
     if USE_SHORTIDS:
         args.append("--shortids")
     if CLIENTID_PREFIX:
