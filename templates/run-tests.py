@@ -55,6 +55,7 @@ CONN_RATE : int = {{ emqtt_bench_conn_rate | default(0) }}
 NUM_BUCKETS : int = {{ emqtt_bench_num_buckets | default(1) }}
 PAYLOAD_SIZE : int = {{ emqtt_bench_payload_size | default(256) }}
 NUM_INFLIGHT : int = {{ emqtt_bench_num_inflight | default(1) }}
+USE_SSL : bool = {{ emqtt_bench_use_ssl | default(False) | bool }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -173,6 +174,12 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
         args += ["--prefix", CLIENTID_PREFIX]
     if CONN_RATE != 0:
         args += ["--connrate", str(conn_rate)]
+    if USE_SSL:
+        args += [
+            "--ssl",
+            "--certfile", "/tmp/client-cert.pem",
+            "--keyfile", "/tmp/client-key.pem",
+        ]
     if bench_cmd == "pub":
         args += [
             "-I", str(PUB_INTERVAL_MS),
