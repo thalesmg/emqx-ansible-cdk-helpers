@@ -83,6 +83,11 @@
             path: /etc/emqx/listeners.conf
             regex: '^#* *listener\.ssl\.external\.cacertfile = '
             line: 'listener.ssl.external.cacertfile = /etc/emqx/certs/cacert.pem'
+        - name: patch emqx.conf - node.max_ports
+          lineinfile:
+            path: /etc/emqx/emqx.conf
+            regex: '^#* *node\.max_ports = '
+            line: 'node.max_ports = 134217727'
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
@@ -94,6 +99,11 @@
         line: "LimitNOFILE=1000000000"
       # notify:
       #   - restart emqx
+    - name: increase max number of erlang ports in vm.args
+      lineinfile:
+        path: "/etc/emqx/vm.args"
+        regexp: "^\+Q +[0-9]+"
+        line: "+Q 134217727"
   # handlers:
   #   - name: restart emqx
   #     systemd:
