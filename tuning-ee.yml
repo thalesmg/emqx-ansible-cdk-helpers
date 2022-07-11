@@ -102,7 +102,7 @@
     - name: increase max number of erlang ports in vm.args
       lineinfile:
         path: "/etc/emqx/vm.args"
-        regexp: "^\+Q +[0-9]+"
+        regexp: "^\\+Q +[0-9]+"
         line: "+Q 134217727"
   # handlers:
   #   - name: restart emqx
