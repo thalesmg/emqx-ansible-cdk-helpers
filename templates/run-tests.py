@@ -179,6 +179,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
             "--ssl",
             "--certfile", "/tmp/client-cert.pem",
             "--keyfile", "/tmp/client-key.pem",
+            "-p", "8883",
         ]
     if bench_cmd == "pub":
         args += [
