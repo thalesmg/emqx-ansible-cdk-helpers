@@ -78,11 +78,11 @@
             path: /etc/emqx/listeners.conf
             regex: '^#* *listener\.ssl\.external\.verify = '
             line: 'listener.ssl.external.verify = {{ emqx_server_ssl_verify | default("verify_none") }}'
-        - name: patch listeners.conf - ssl cacert
+        - name: patch listeners.conf - ssl cacertfile
           lineinfile:
             path: /etc/emqx/listeners.conf
-            regex: '^#* *listener\.ssl\.external\.cacert = '
-            line: 'listener.ssl.external.cacert = /etc/emqx/certs/cacert.pem'
+            regex: '^#* *listener\.ssl\.external\.cacertfile = '
+            line: 'listener.ssl.external.cacertfile = /etc/emqx/certs/cacert.pem'
       when: emqx_db_backend is defined and emqx_num_cores is defined
       vars:
         cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
