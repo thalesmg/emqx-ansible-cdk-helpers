@@ -104,6 +104,11 @@
         path: "/etc/emqx/vm.args"
         regexp: "^\\+Q +[0-9]+"
         line: "+Q 134217727"
+    - name: set idle timeout / hibernation
+      lineinfile:
+        path: "/etc/emqx/zones.conf"
+        regexp: "^#* *zone\.external\.idle_timeout ="
+        line: 'zone.external.idle_timeout = {{ emqtt_bench_idle_timeout | default("15s") }}'
   # handlers:
   #   - name: restart emqx
   #     systemd:
