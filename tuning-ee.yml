@@ -118,7 +118,7 @@
       lineinfile:
         path: "/etc/emqx/emqx.conf"
         regex: "^#* *node\\.global_gc_interval ="
-        line: 'node.global_gc_interval = {{ emqtt_bench_global_gc_interval | default(900) }}'
+        line: 'node.global_gc_interval = {{ emqtt_bench_global_gc_interval | default("15m") }}'
   # handlers:
   #   - name: restart emqx
   #     systemd:
