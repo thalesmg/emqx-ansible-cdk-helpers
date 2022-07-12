@@ -114,6 +114,11 @@
         path: "/etc/emqx/zones.conf"
         regex: "^#* *zone\\.external\\.force_gc_policy ="
         line: 'zone.external.force_gc_policy = {{ emqtt_bench_force_gc_policy | default("16000|16MB") }}'
+    - name: set global gc interval
+      lineinfile:
+        path: "/etc/emqx/emqx.conf"
+        regex: "^#* *node\\.global_gc_interval ="
+        line: 'node.global_gc_interval = {{ emqtt_bench_global_gc_interval | default(900) }}'
   # handlers:
   #   - name: restart emqx
   #     systemd:
