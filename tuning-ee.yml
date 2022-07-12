@@ -109,6 +109,11 @@
         path: "/etc/emqx/zones.conf"
         regex: "^#* *zone\\.external\\.idle_timeout ="
         line: 'zone.external.idle_timeout = {{ emqtt_bench_idle_timeout | default("15s") }}'
+    - name: set force gc policy
+      lineinfile:
+        path: "/etc/emqx/zones.conf"
+        regex: "^#* *zone\\.external\\.force_gc_policy ="
+        line: 'zone.external.force_gc_policy = {{ emqtt_bench_force_gc_policy | default("16000|16MB") }}'
   # handlers:
   #   - name: restart emqx
   #     systemd:
