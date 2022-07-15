@@ -133,12 +133,12 @@
       loop:
         - xt_conntrack
         - nf_conntrack_netlink
-        - nfnetlink
+        # - nfnetlink
         - nf_conntrack
-        - nf_defrag_ipv6
-        - nf_defrag_ipv4
-        - libcrc32c
-        - x_tables
+        # - nf_defrag_ipv6
+        # - nf_defrag_ipv4
+        # - libcrc32c
+        # - x_tables
     # - name: reboot machine
     #   when: docker_systemd.changed
     #   reboot:
