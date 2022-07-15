@@ -3,6 +3,7 @@
 - name: define hosts
   hosts: localhost
   gather_facts: no
+  tags: [start_cores,start_replicants]
   roles:
     - define_inventory
 
