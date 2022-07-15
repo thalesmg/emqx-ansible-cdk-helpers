@@ -1,5 +1,9 @@
 from ansible.plugins.inventory import BaseInventoryPlugin
 
+def _add_jumphost(inventory, host, bastion_server):
+    if bastion_server:
+        inventory.set_variable(host, 'ansible_ssh_common_args', f"-o StrictHostKeyChecking=no -J ec2-user@{bastion_server}")
+
 class InventoryModule(BaseInventoryPlugin):
     # used internally by Ansible, it should match the file name but not required
     NAME = 'tmginv'
@@ -15,15 +19,22 @@ class InventoryModule(BaseInventoryPlugin):
         num_cores = int(self._vars["emqx_num_cores"])
         num_loadgen = int(self._vars["emqx_loadgen_num"])
         cluster_name = self._vars["emqx_cluster_name"]
+        bastion_server = self._vars.get("emqx_bastion_server")
 
         inventory.add_group("emqx")
         inventory.add_group("cores")
         inventory.add_group("replicants")
         for i in range(num_emqx):
             group = "cores" if i < num_cores else "replicants"
-            inventory.add_host(f"emqx-{i}.int.{cluster_name}", group=group)
-            inventory.add_host(f"emqx-{i}.int.{cluster_name}", group="emqx")
+            host = f"emqx-{i}.int.{cluster_name}"
+            inventory.add_host(host, group=group)
+            inventory.add_host(host, group="emqx")
+            inventory.set_variable(host, "ansible_user", "ubuntu")
+            _add_jumphost(inventory, host, bastion_server)
 
         inventory.add_group("loadgen")
         for i in range(num_loadgen):
-            inventory.add_host(f"loadgen-{i}.int.{cluster_name}", group="loadgen")
+            host = f"loadgen-{i}.int.{cluster_name}"
+            inventory.add_host(host, group="loadgen")
+            inventory.set_variable(host, "ansible_user", "ubuntu")
+            _add_jumphost(inventory, host, bastion_server)
