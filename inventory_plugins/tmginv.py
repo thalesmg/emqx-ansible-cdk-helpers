@@ -15,9 +15,15 @@ class InventoryModule(BaseInventoryPlugin):
         num_cores = int(self._vars["emqx_num_cores"])
         num_loadgen = int(self._vars["emqx_loadgen_num"])
         cluster_name = self._vars["emqx_cluster_name"]
+
+        inventory.add_group("emqx")
+        inventory.add_group("cores")
+        inventory.add_group("replicants")
         for i in range(num_emqx):
             group = "cores" if i < num_cores else "replicants"
-            self.inventory.add_host(f"emqx-{i}.int.{cluster_name}", group=group)
+            inventory.add_host(f"emqx-{i}.int.{cluster_name}", group=group)
+            inventory.add_host(f"emqx-{i}.int.{cluster_name}", group="emqx")
+
+        inventory.add_group("loadgen")
         for i in range(num_loadgen):
-            group = "loadgen"
-            self.inventory.add_host(f"loadgen-{i}.int.{cluster_name}", group=group)
+            inventory.add_host(f"loadgen-{i}.int.{cluster_name}", group="loadgen")
