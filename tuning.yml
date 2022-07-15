@@ -117,6 +117,17 @@
     #   pip:
     #     name: psutil
     #     state: present
+    - name: disable conntrack
+      systemd:
+        name: docker
+        state: stopped
+        enabled: false
+        force: true
+      register: docker_systemd
+    - name: reboot machine
+      when: docker_systemd.changed
+      reboot:
+        reboot_timeout: 180
   handlers:
     - name: restart emqx
       systemd:
