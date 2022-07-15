@@ -126,10 +126,23 @@
       register: docker_systemd
     - debug:
         var: docker_systemd
-    - name: reboot machine
-      when: docker_systemd.changed
-      reboot:
-        reboot_timeout: 180
+    - name: rm conntrack modules
+      modprobe:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - xt_conntrack
+        - nf_conntrack_netlink
+        - nfnetlink
+        - nf_conntrack
+        - nf_defrag_ipv6
+        - nf_defrag_ipv4
+        - libcrc32c
+        - x_tables
+    # - name: reboot machine
+    #   when: docker_systemd.changed
+    #   reboot:
+    #     reboot_timeout: 180
   handlers:
     - name: restart emqx
       systemd:
