@@ -38,7 +38,7 @@ set -eu
   # TMG FIXME: Outdated or module not loaded; ignore
   # ... but trying again after bumping into a limit.
   # TCP connection tracking:
-  # sysctl -w net.nf_conntrack_max=10000000
+  sysctl -w net.nf_conntrack_max=10000000
   # sysctl -w net.netfilter.nf_conntrack_max=1000000
   # sysctl -w net.netfilter.nf_conntrack_tcp_timeout_time_wait=30
 
