@@ -124,6 +124,8 @@
         enabled: false
         force: true
       register: docker_systemd
+    - debug:
+        var: docker_systemd
     - name: reboot machine
       when: docker_systemd.changed
       reboot:
