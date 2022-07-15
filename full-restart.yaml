@@ -27,6 +27,7 @@
   hosts: cores
   become: yes
   become_user: root
+  tags: [start_cores]
   roles:
     - start_emqx
 
@@ -34,6 +35,7 @@
   hosts: replicants
   become: yes
   become_user: root
+  tags: [start_replicants]
   roles:
     - start_emqx
 
