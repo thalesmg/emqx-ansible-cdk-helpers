@@ -53,9 +53,9 @@
         mode: '0777'
       loop:
         - "run-tests.py"
-        - "conn-test.sh"
-        - "sub1-test.sh"
-        - "sub-unique-test.sh"
+        # - "conn-test.sh"
+        # - "sub1-test.sh"
+        # - "sub-unique-test.sh"
       vars:
         timeout: "{{ script_timeout_s | default('300') }}"
         num_procs: "{{ emqx_test_procs | default(1) | int }}"
