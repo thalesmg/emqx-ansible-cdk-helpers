@@ -16,7 +16,7 @@
       when: lookup('vars', item) is undefined
       loop:
         - emqx_script_result_file
-        - emqx_bastion_server
+        # - emqx_bastion_server
         - emqx_script_result_dest
 
 - name: collect logs
