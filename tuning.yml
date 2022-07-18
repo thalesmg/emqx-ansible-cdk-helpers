@@ -117,37 +117,37 @@
     #   pip:
     #     name: psutil
     #     state: present
-    - name: disable docker and conntrack
-      systemd:
-        name: docker.service
-        state: stopped
-        enabled: false
-        force: true
-      register: docker_systemd1
-    - name: disable docker and conntrack (socket)
-      systemd:
-        name: docker.socket
-        state: stopped
-        enabled: false
-        force: true
-      register: docker_systemd2
-    - debug:
-        var: docker_systemd1
-    - debug:
-        var: docker_systemd2
-    - name: rm conntrack modules
-      modprobe:
-        name: "{{ item }}"
-        state: absent
-      loop:
-        - xt_conntrack
-        - nf_conntrack_netlink
-        # - nfnetlink
-        - nf_conntrack
-        # - nf_defrag_ipv6
-        # - nf_defrag_ipv4
-        # - libcrc32c
-        # - x_tables
+    # - name: disable docker and conntrack
+    #   systemd:
+    #     name: docker.service
+    #     state: stopped
+    #     enabled: false
+    #     force: true
+    #   register: docker_systemd1
+    # - name: disable docker and conntrack (socket)
+    #   systemd:
+    #     name: docker.socket
+    #     state: stopped
+    #     enabled: false
+    #     force: true
+    #   register: docker_systemd2
+    # - debug:
+    #     var: docker_systemd1
+    # - debug:
+    #     var: docker_systemd2
+    # - name: rm conntrack modules
+    #   modprobe:
+    #     name: "{{ item }}"
+    #     state: absent
+    #   loop:
+    #     - xt_conntrack
+    #     - nf_conntrack_netlink
+    #     # - nfnetlink
+    #     - nf_conntrack
+    #     # - nf_defrag_ipv6
+    #     # - nf_defrag_ipv4
+    #     # - libcrc32c
+    #     # - x_tables
     # - name: reboot machine
     #   when: docker_systemd.changed
     #   reboot:
