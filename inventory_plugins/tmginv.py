@@ -3,8 +3,6 @@ from ansible.plugins.inventory import BaseInventoryPlugin
 def _add_jumphost(inventory, host, bastion_server):
     if bastion_server:
         inventory.set_variable(host, 'ansible_ssh_common_args', f"-o StrictHostKeyChecking=no -J ec2-user@{bastion_server}")
-    else:
-        inventory.set_variable(host, 'ansible_ssh_common_args', "-o StrictHostKeyChecking=no")
 
 class InventoryModule(BaseInventoryPlugin):
     # used internally by Ansible, it should match the file name but not required
