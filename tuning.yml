@@ -1,10 +1,10 @@
 ---
 
-- name: define hosts
-  hosts: localhost
-  gather_facts: no
-  roles:
-    - define_inventory
+# - name: define hosts
+#   hosts: localhost
+#   gather_facts: no
+#   roles:
+#     - define_inventory
 
 - name: configure timezone
   hosts: emqx:loadgen
@@ -117,15 +117,24 @@
     #   pip:
     #     name: psutil
     #     state: present
-    - name: disable conntrack
+    - name: disable docker and conntrack
       systemd:
-        name: docker
+        name: docker.service
         state: stopped
         enabled: false
         force: true
-      register: docker_systemd
+      register: docker_systemd1
+    - name: disable docker and conntrack (socket)
+      systemd:
+        name: docker.socket
+        state: stopped
+        enabled: false
+        force: true
+      register: docker_systemd2
     - debug:
-        var: docker_systemd
+        var: docker_systemd1
+    - debug:
+        var: docker_systemd2
     - name: rm conntrack modules
       modprobe:
         name: "{{ item }}"
