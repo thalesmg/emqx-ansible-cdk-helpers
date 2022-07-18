@@ -23,6 +23,7 @@
     src: "{{ node_dump_path[0] }}"
     dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-node_dump.tar.gz"
     flat: yes
+  timeout: 60
 - name: crashdump?
   stat:
     path: "/var/log/emqx/erl_crash.dump"
