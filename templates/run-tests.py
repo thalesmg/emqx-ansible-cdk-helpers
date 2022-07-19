@@ -171,7 +171,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
     ]
     if LOWMEM_MODE:
         args.append("--lowmem")
-    if WAIT_BEFORE_PUBLISHING:
+    if bench_cmd == "pub" and WAIT_BEFORE_PUBLISHING:
         args.append("--wait-before-publishing")
     if USE_SHORTIDS:
         args.append("--shortids")
