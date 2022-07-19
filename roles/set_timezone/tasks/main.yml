@@ -8,7 +8,7 @@
     owner: root
     group: root
     backup: yes
-  notify: update_timezone
+  # notify: update_timezone
 
 - name: set /etc/localtime link
   file:
@@ -18,6 +18,9 @@
     mode: 0777
     owner: root
     group: root
-  notify: update_timezone
+  # notify: update_timezone
+
+- name: restart time services
+  include_tasks: ./restart_services.yml
 
 ...
