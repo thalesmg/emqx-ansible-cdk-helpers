@@ -211,7 +211,7 @@ def get_ifaddrs() -> str:
     out = subprocess.run("ip addr |grep -o '192.*/32' | sed 's#/32##g' | paste -s -d , -",
                          shell=True, capture_output=True,
                          )
-    addrs = out.stdout.decode("utf-8")
+    addrs = out.stdout.decode("utf-8").strip()
     return addrs
 
 
@@ -225,7 +225,7 @@ def emqttb_pubsub_fwd(hosts : str, qos = 0,
     ifaddrs = get_ifaddrs()
     args = [
         script,
-        "--loglevel", "debug",
+        "--log-level", "info",
         "--restapi",
         "--pushgw",
         "--pushgw-url", f"http://lb.int.{CLUSTER_NAME}:9091",
