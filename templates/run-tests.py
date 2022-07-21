@@ -207,6 +207,79 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
     return proc
 
 
+def get_ifaddrs() -> str:
+    out = subprocess.run("ip addr |grep -o '192.*/32' | sed 's#/32##g' | paste -s -d , -",
+                         shell=True, capture_output=True,
+                         )
+    addrs = out.stdout.decode("utf-8")
+    return addrs
+
+
+def emqttb_pubsub_fwd(hosts : str, qos = 0,
+                      start_n : int = START_N, num_conns : int = NUM_CONNS,
+                      conn_rate : int = CONN_RATE) -> subprocess.Popen:
+    cwd = "/root/emqttb/"
+    script = Path(f"{cwd}/emqttb")
+    # in us
+    conn_interval = int(1 / conn_rate * 1_000_000)
+    ifaddrs = get_ifaddrs()
+    args = [
+        script,
+        "--loglevel", "debug",
+        "--restapi",
+        "--pushgw",
+        "--pushgw-url", f"http://lb.int.{CLUSTER_NAME}:9091",
+        "--conf-dump-file", "emqttb.conf",
+        "--conf", "emqttb.conf",
+        # "--grafana",
+        # "--grafana-url", f"http://lb.int.{CLUSTER_NAME}:3000",
+        # "--grafana-login", "admin",
+        "@g",
+        "--lowmem",
+        "-h", hosts,
+        "--ifaddr", ifaddrs,
+        "@pubsub_fwd",
+        "--num-clients", str(num_conns),
+        "--conninterval", f"{conn_interval}us",
+        "--pubinterval", f"{PUB_INTERVAL_MS}ms",
+        "--sub-qos", str(qos),
+        "--pub-qos", str(qos),
+        "--start-n", str(start_n),
+    ]
+    outfile_path = Path("/", "tmp", f"{RESULT_FILE}.pubsub_fwd")
+    outfile = open(outfile_path, "w+")
+    args_str = shlex.join([str(a) for a in args])
+    outfile.writelines([f"# {args_str}\n\n"])
+    proc = subprocess.Popen(
+        args,
+        cwd = cwd,
+        stdout = outfile,
+        stderr = outfile,
+    )
+    return proc
+
+
+def pub_sub_1_to_1_emqttb(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
+    targets = host_targets(host_shift=0)
+    num_targets = len(targets)
+    conn_rate = CONN_RATE
+    num_conns = NUM_CONNS
+    params = params_for_lg(TOTAL_NUM_LG, num_targets, num_conns, conn_rate)
+    log("spawning...")
+    procs = [
+        emqttb_pubsub_fwd(
+            # start_n for this process
+            start_n = params["start_nums"][LG_NUM],
+            num_conns = params["num_conns"],
+            hosts = targets,
+            conn_rate = params["conn_rate"],
+        )
+    ]
+    pid_list += procs
+    log(f"spawned: {procs}")
+    return pid_list
+
+
 def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
                    host_shift : int = 0,
                    is_wildcard : bool = True) -> List[subprocess.Popen]:
