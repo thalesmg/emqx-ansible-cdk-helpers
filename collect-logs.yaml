@@ -23,6 +23,7 @@
   hosts: emqx
   become: yes
   become_user: root
+  tags: [emqx_logs]
   roles:
     - collect_logs
 
