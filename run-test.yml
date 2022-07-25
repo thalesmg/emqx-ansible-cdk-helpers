@@ -90,6 +90,14 @@
   roles:
     - collect_logs
 
+- name: collect lg logs
+  hosts: loadgen
+  become: yes
+  become_user: root
+  tags: [collect_logs]
+  roles:
+    - collect_lg_logs
+
 - name: move results
   hosts: localhost
   tags: [collect_logs]
