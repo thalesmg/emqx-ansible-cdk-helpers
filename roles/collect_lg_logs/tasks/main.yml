@@ -9,7 +9,7 @@
     state: directory
 - name: output?
   stat:
-    path: "/tmp/{{ emqx_script_result_file }}.{{ lg_num }}"
+    path: "/tmp/{{ emqx_script_result_file }}.{{ loadgen_num }}"
   register: output_stat
 - name: fetch output
   when: output_stat.stat.exists
