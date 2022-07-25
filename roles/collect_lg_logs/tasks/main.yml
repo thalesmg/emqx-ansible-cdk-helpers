@@ -21,5 +21,6 @@
     dest: "./tmp/data/{{ emqx_script_result_file }}/{{ item.path | basename }}"
     flat: yes
   loop: "{{ output_stat.files }}"
+  timeout: 60
 
 ...
