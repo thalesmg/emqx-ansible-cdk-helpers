@@ -59,6 +59,7 @@ USE_SSL : bool = {{ emqtt_bench_use_ssl | default(False) | bool }}
 WAIT_BEFORE_PUBLISHING : bool = {{ emqtt_bench_wait_before_publishing | default(False) | bool }}
 # s
 RELAXATION_PERIOD : int = {{ emqtt_bench_relaxation_period | default(120) }}
+MAYBE_PUBLISH_FUEL : int = {{ emqtt_bench_fuel | default(10) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -197,6 +198,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
             "--max-random-wait", str(MAX_RANDOM_WAIT),
             "-s", str(PAYLOAD_SIZE),
             "-F", str(NUM_INFLIGHT),
+            "--fuel", str(MAYBE_PUBLISH_FUEL),
         ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
     outfile = open(outfile_path, "w+")
