@@ -48,11 +48,11 @@
           # notify:
           #   - restart emqx
           register: ad_hoc_override_update
-        - name: stop emqx
-          systemd:
-            name: emqx
-            state: stopped
-          when: ad_hoc_override_update.changed
+        # - name: stop emqx
+        #   systemd:
+        #     name: emqx
+        #     state: stopped
+        #   when: ad_hoc_override_update.changed
         # - name: increase zdbbl (:dist_buf_busy_limit)
         #   lineinfile:
         #     path: "/etc/emqx/vm.args"
