@@ -8,14 +8,18 @@
     path: "./tmp/data"
     state: directory
 - name: output?
-  stat:
-    path: "/tmp/{{ emqx_script_result_file }}.{{ loadgen_num }}"
+  find:
+    paths: "/tmp/"
+    patterns:
+      - "{{ emqx_script_result_file }}.pub.{{ loadgen_num }}"
+      - "{{ emqx_script_result_file }}.sub.{{ loadgen_num }}"
   register: output_stat
 - name: fetch output
-  when: output_stat.stat.exists
+  when: output_stat.files
   fetch:
-    src: "{{ output_stat.stat.path }}"
-    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-output"
+    src: "{{ item.path }}"
+    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ item.path | basename }}"
     flat: yes
+  loop: "{{ output_stat.files }}"
 
 ...
