@@ -1,0 +1,21 @@
+---
+
+- name: ensure local tmp data dir
+  delegate_to: localhost
+  become: no
+  run_once: yes
+  file:
+    path: "./tmp/data"
+    state: directory
+- name: output?
+  stat:
+    path: "/tmp/{{ emqx_script_result_file }}.{{ lg_num }}"
+  register: output_stat
+- name: fetch output
+  when: output_stat.stat.exists
+  fetch:
+    src: "{{ output_stat.stat.path }}"
+    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ inventory_hostname_short }}-output"
+    flat: yes
+
+...
