@@ -90,6 +90,10 @@ def log(msg : str):
     )
 
 
+def ward_off_oom_killer(proc : subprocess.Popen):
+    subprocess.run(f"echo -100 > /proc/{proc.pid}/oom_score_adj", shell=True)
+
+
 def replicant_target(i : int) -> str:
     if REPLICANTS:
         target = REPLICANTS[i % len(REPLICANTS)]
@@ -334,6 +338,10 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     ]
     pid_list += pub_procs
     log(f"publishers spawned: {pub_procs}")
+
+    log("warding off oom killer...")
+    for p in pub_procs:
+        ward_off_oom_killer(p)
 
     return pid_list
 
