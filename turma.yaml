@@ -55,7 +55,7 @@
     #     - legionarius
     - name: download release
       shell: |
-        if [ ! -f "/tmp/{{ item }}.tar.gz" || $force = yes ]; then
+        if [[ ! -f "/tmp/{{ item }}.tar.gz" || $force = yes ]]; then
           aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz
         fi
       vars:
