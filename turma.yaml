@@ -17,6 +17,8 @@
         else
           echo skipping...
         fi
+      args:
+        executable: /usr/bin/bash
       vars:
         force: "{{ turma_download_force | default('no') }}"
       loop:
