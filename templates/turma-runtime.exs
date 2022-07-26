@@ -15,7 +15,7 @@ config Turma.Decurio,
   name: "decurio-{{ inventory_hostname_short }}"
 
 config Turma.Legionarius,
-  bind: {"0.0.0.0", 19876},
+  bind: {"{{ ansible_default_ipv4.address }}", 19876},
   subscriptions: [
     {% if "loadgen" in group_names %}
     "loadgen",
