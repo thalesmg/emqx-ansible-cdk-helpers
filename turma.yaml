@@ -24,16 +24,29 @@
     #   loop:
     #     - decurio
     #     - legionarius
-    - name: copy releases
-      copy:
-        src: "{{ item }}-0.1.0.tar.gz"
-        dest: "/tmp/{{ item }}/"
+    # - name: copy releases
+    #   copy:
+    #     src: "{{ item }}-0.1.0.tar.gz"
+    #     dest: "/tmp/{{ item }}/"
+    #   loop:
+    #     - decurio
+    #     - legionarius
+    # - name: uncompress releases
+    #   unarchive:
+    #     src: "/tmp/{{ item }}-0.1.0.tar.gz"
+    #     dest: "/tmp/{{ item }}/"
+    #     remote_src: yes
+    #   loop:
+    #     - decurio
+    #     - legionarius
+    - name: download release
+      command: "aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz"
       loop:
         - decurio
         - legionarius
     - name: uncompress releases
       unarchive:
-        src: "/tmp/{{ item }}-0.1.0.tar.gz"
+        src: "/tmp/{{ item }}.tar.gz"
         dest: "/tmp/{{ item }}/"
         remote_src: yes
       loop:
