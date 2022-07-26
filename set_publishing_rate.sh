@@ -15,6 +15,7 @@ if [ -n "$PUBNODE" ]; then
         application:set_env(emqtt_bench, pub_interval, $RATE),
         application:get_env(emqtt_bench, pub_interval)
       end),
+      io:format(user, \"~ninterval: ~p~n\", [X]),
       init:stop().
       " 2>&1
   echo done
