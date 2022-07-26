@@ -12,13 +12,19 @@
     - name: download release
       shell: |
         if [[ ! -f "/tmp/{{ item }}.tar.gz" || $force = yes ]]; then
+          echo downloading...
           aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz
+        else
+          echo skipping...
         fi
       vars:
         force: "{{ turma_download_force | default('no') }}"
       loop:
         - decurio
         - legionarius
+      register: download_res
+    - debug:
+        var: download_res
     - name: uncompress releases
       unarchive:
         src: "/tmp/{{ item }}.tar.gz"
