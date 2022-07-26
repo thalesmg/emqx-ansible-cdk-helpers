@@ -22,5 +22,6 @@
     flat: yes
   loop: "{{ output_stat.files }}"
   timeout: 60
+  ignore_errors: yes
 
 ...
