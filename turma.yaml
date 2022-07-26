@@ -78,13 +78,24 @@
       loop:
         - decurio
         - legionarius
+    - name: stop legionarius if running
+      ignore_errors: yes
+      become: yes
+      become_user: root
+      command: "/tmp/legionarius/bin/legionarius stop"
     - name: start legionarius
       become: yes
       become_user: root
+      when: inventory_hostname != groups["loadgen"][0]
       command: "/tmp/legionarius/bin/legionarius daemon_iex"
 
 - hosts: loadgen[0]
   tasks:
+    - name: stop decurio if running
+      ignore_errors: yes
+      become: yes
+      become_user: root
+      command: "/tmp/decurio/bin/decurio stop"
     - name: start decurio
       become: yes
       become_user: root
