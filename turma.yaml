@@ -2,14 +2,6 @@
 
 - hosts: emqx:loadgen
   tasks:
-    # - name: copy releases
-    #   file:
-    #     src: "{{ item }}"
-    #     dest: /tmp/
-    #     mode: '0777'
-    #   loop:
-    #     - decurio-0.1.0.tar.gz
-    #     - legionarius-0.1.0.tar.gz
     - name: create dirs
       file:
         path: "/tmp/{{ item }}"
@@ -17,42 +9,6 @@
       loop:
         - decurio
         - legionarius
-    # - name: uncompress releases
-    #   unarchive:
-    #     src: "{{ item }}-0.1.0.tar.gz"
-    #     dest: "/tmp/{{ item }}/"
-    #   loop:
-    #     - decurio
-    #     - legionarius
-    # - name: copy releases
-    #   copy:
-    #     src: "{{ item }}-0.1.0.tar.gz"
-    #     dest: "/tmp/{{ item }}/"
-    #   loop:
-    #     - decurio
-    #     - legionarius
-    # - name: uncompress releases
-    #   unarchive:
-    #     src: "/tmp/{{ item }}-0.1.0.tar.gz"
-    #     dest: "/tmp/{{ item }}/"
-    #     remote_src: yes
-    #   loop:
-    #     - decurio
-    #     - legionarius
-    # - name: release?
-    #   find:
-    #     paths: "/tmp/"
-    #     patterns:
-    #       - "decurio.tar.gz"
-    #       - "legionarius.tar.gz"
-    #   register: releases
-    # - debug:
-    #     var: releases
-    # - fail:
-    #     msg: "{{ item not in (releases.files | map(attribute='path')) }}"
-    #   loop:
-    #     - decurio
-    #     - legionarius
     - name: download release
       shell: |
         if [[ ! -f "/tmp/{{ item }}.tar.gz" || $force = yes ]]; then
@@ -78,27 +34,11 @@
       loop:
         - decurio
         - legionarius
-    - name: stop legionarius if running
-      ignore_errors: yes
-      become: yes
-      become_user: root
-      command: "/tmp/legionarius/bin/legionarius stop"
-    - name: start legionarius
-      become: yes
-      become_user: root
-      when: inventory_hostname != groups["loadgen"][0]
-      command: "/tmp/legionarius/bin/legionarius daemon_iex"
 
-- hosts: loadgen[0]
-  tasks:
-    - name: stop decurio if running
-      ignore_errors: yes
-      become: yes
-      become_user: root
-      command: "/tmp/decurio/bin/decurio stop"
-    - name: start decurio
-      become: yes
-      become_user: root
-      command: "/tmp/decurio/bin/decurio daemon_iex"
+- hosts: emqx:loadgen
+  become: yes
+  become_user: root
+  roles:
+    - restart_turma
 
 ...
