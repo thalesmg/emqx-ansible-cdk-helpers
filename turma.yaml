@@ -39,8 +39,25 @@
     #   loop:
     #     - decurio
     #     - legionarius
+    # - name: release?
+    #   find:
+    #     paths: "/tmp/"
+    #     patterns:
+    #       - "decurio.tar.gz"
+    #       - "legionarius.tar.gz"
+    #   register: releases
+    # - debug:
+    #     var: releases
+    # - fail:
+    #     msg: "{{ item not in (releases.files | map(attribute='path')) }}"
+    #   loop:
+    #     - decurio
+    #     - legionarius
     - name: download release
-      command: "aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz"
+      shell: |
+        if [ ! -f "/tmp/{{ item }}.tar.gz" ]; then
+          aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz
+        fi
       loop:
         - decurio
         - legionarius
@@ -56,6 +73,9 @@
       template:
         src: turma-runtime.exs
         dest: "/tmp/{{ item }}/releases/0.1.0/runtime.exs"
+      loop:
+        - decurio
+        - legionarius
     - name: start legionarius
       command: "/tmp/legionarius/bin/legionarius daemon_iex"
 
