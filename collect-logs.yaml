@@ -31,6 +31,7 @@
   hosts: loadgen
   become: yes
   become_user: root
+  tags: [lg_logs]
   roles:
     - collect_lg_logs
 
