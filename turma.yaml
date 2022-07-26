@@ -79,11 +79,15 @@
         - decurio
         - legionarius
     - name: start legionarius
+      become: yes
+      become_user: root
       command: "/tmp/legionarius/bin/legionarius daemon_iex"
 
 - hosts: loadgen[0]
   tasks:
     - name: start decurio
+      become: yes
+      become_user: root
       command: "/tmp/decurio/bin/decurio daemon_iex"
 
 ...
