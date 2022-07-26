@@ -17,10 +17,25 @@
       loop:
         - decurio
         - legionarius
-    - name: uncompress releases
-      unarchive:
+    # - name: uncompress releases
+    #   unarchive:
+    #     src: "{{ item }}-0.1.0.tar.gz"
+    #     dest: "/tmp/{{ item }}/"
+    #   loop:
+    #     - decurio
+    #     - legionarius
+    - name: copy releases
+      file:
         src: "{{ item }}-0.1.0.tar.gz"
         dest: "/tmp/{{ item }}/"
+      loop:
+        - decurio
+        - legionarius
+    - name: uncompress releases
+      unarchive:
+        src: "/tmp/{{ item }}-0.1.0.tar.gz"
+        dest: "/tmp/{{ item }}/"
+        remote_src: yes
       loop:
         - decurio
         - legionarius
