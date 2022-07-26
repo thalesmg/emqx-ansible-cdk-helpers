@@ -39,21 +39,34 @@
         force: "{{ turma_download_force | default('no') }}"
       loop:
         - decurio
-    - name: uncompress releases
+    - name: uncompress legionarius
+      unarchive:
+        src: "/tmp/{{ item }}.tar.gz"
+        dest: "/tmp/{{ item }}/"
+        remote_src: yes
+      loop:
+        - legionarius
+    - name: uncompress decurio
+      when: inventory_hostname == groups["loadgen"][0]
       unarchive:
         src: "/tmp/{{ item }}.tar.gz"
         dest: "/tmp/{{ item }}/"
         remote_src: yes
       loop:
         - decurio
+    - name: set config (legionarius)
+      template:
+        src: turma-runtime.exs
+        dest: "/tmp/{{ item }}/releases/0.1.0/runtime.exs"
+      loop:
         - legionarius
-    - name: set config
+    - name: set config (decurio)
+      when: inventory_hostname == groups["loadgen"][0]
       template:
         src: turma-runtime.exs
         dest: "/tmp/{{ item }}/releases/0.1.0/runtime.exs"
       loop:
         - decurio
-        - legionarius
 
 - hosts: emqx:loadgen
   become: yes
