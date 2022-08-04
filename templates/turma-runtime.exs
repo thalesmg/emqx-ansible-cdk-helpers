@@ -7,17 +7,17 @@ config Turma.Decurio,
       "{{ emqx }}:19876",
       {% endfor %}
     ],
-    "cores" => [
+    "core" => [
       {% for core in (groups["cores"] | default([]))  %}
       "{{ core }}:19876",
       {% endfor %}
     ],
-    "replicants" => [
+    "replicant" => [
       {% for replicant in (groups["replicants"] | default([]))  %}
       "{{ replicant }}:19876",
       {% endfor %}
     ],
-    "loadgens" => [
+    "loadgen" => [
       {% for loadgen in (groups["loadgen"] | default([]))  %}
       "{{ loadgen }}:19876",
       {% endfor %}
