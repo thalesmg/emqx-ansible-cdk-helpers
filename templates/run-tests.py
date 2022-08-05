@@ -62,6 +62,7 @@ RELAXATION_PERIOD : int = {{ emqtt_bench_relaxation_period | default(120) }}
 MAYBE_PUBLISH_FUEL : int = {{ emqtt_bench_fuel | default(10) }}
 # s
 CONNECT_TIMEOUT : int = {{ emqtt_bench_connect_timeout | default(60) }}
+RANDOM_HOSTS : bool = {{ emqtt_bench_random_hosts | default(False) | bool }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -194,6 +195,8 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
             "--keyfile", "/tmp/client-key.pem",
             "-p", "8883",
         ]
+    if RANDOM_HOSTS:
+        args.append("--random-hosts")
     if bench_cmd == "pub":
         args += [
             "-I", str(PUB_INTERVAL_MS),
