@@ -65,6 +65,7 @@ CONNECT_TIMEOUT : int = {{ emqtt_bench_connect_timeout | default(60) }}
 RANDOM_HOSTS : bool = {{ emqtt_bench_random_hosts | default(False) | bool }}
 # s
 MQTT_KEEPALIVE : int = {{ emqtt_bench_mqtt_keepalive | default(300) }}
+MQTT_FORCE_PING : bool = {{ emqtt_bench_mqtt_force_ping | default(False) | bool }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -181,6 +182,10 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
         "--connect-timeout", str(CONNECT_TIMEOUT),
         "--keepalive", str(MQTT_KEEPALIVE),
     ]
+    if bench_cmd != "conn":
+        args += [
+            "--force-ping",
+        ]
     if LOWMEM_MODE:
         args.append("--lowmem")
     if bench_cmd == "pub" and WAIT_BEFORE_PUBLISHING:
