@@ -63,6 +63,8 @@ MAYBE_PUBLISH_FUEL : int = {{ emqtt_bench_fuel | default(10) }}
 # s
 CONNECT_TIMEOUT : int = {{ emqtt_bench_connect_timeout | default(60) }}
 RANDOM_HOSTS : bool = {{ emqtt_bench_random_hosts | default(False) | bool }}
+# s
+MQTT_KEEPALIVE : int = {{ emqtt_bench_mqtt_keepalive | default(300) }}
 
 BenchCmd = Literal["sub", "pub", "conn"]
 
@@ -177,6 +179,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
         "--num-retry-connect", str(NUM_RETRY_CONNECT),
         "--force-major-gc-interval", str(FORCE_MAJOR_GC_INTERVAL),
         "--connect-timeout", str(CONNECT_TIMEOUT),
+        "--keepalive", str(MQTT_KEEPALIVE),
     ]
     if LOWMEM_MODE:
         args.append("--lowmem")
