@@ -59,14 +59,14 @@
     - name: set config (legionarius)
       template:
         src: turma-runtime.exs
-        dest: "/tmp/{{ item }}/releases/0.1.0/runtime.exs"
+        dest: "/tmp/{{ item }}/etc/runtime.exs"
       loop:
         - legionarius
     - name: set config (decurio)
       when: inventory_hostname == groups["loadgen"][0]
       template:
         src: turma-runtime.exs
-        dest: "/tmp/{{ item }}/releases/0.1.0/runtime.exs"
+        dest: "/tmp/{{ item }}/etc/runtime.exs"
       loop:
         - decurio
 
