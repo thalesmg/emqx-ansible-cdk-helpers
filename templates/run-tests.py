@@ -406,6 +406,36 @@ def pub_sub_1_to_1_only_pubs(pid_list : List[subprocess.Popen]) -> List[subproce
     return pid_list
 
 
+# for faster iteration
+def pub_sub_1_to_1_only_subs(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
+    # host_shift is for forcing forwarding between nodes.  If set to a
+    # multiple of the number of nodes, i.e., `host_shift %
+    # len(REPLICANTS) == 0`, then publishing is local to each node.
+
+    # total connections = pubs + subs
+    num_conns = NUM_CONNS // 2
+
+    targets = host_targets()
+    num_targets = len(targets)
+    conn_rate = CONN_RATE
+    params = params_for_lg(TOTAL_NUM_LG, num_targets, num_conns, conn_rate)
+
+    log("spawning subscribers...")
+    # shifting only the subs
+    sub_procs = [
+        spawn_bench(LG_NUM, "sub", topic = "bench/%i/test", qos = SUB_QoS,
+                    # start_n for this process
+                    start_n = params["start_nums"][LG_NUM],
+                    num_conns = params["num_conns"], hosts = targets,
+                    conn_rate = params["conn_rate"],
+                    )
+    ]
+    pid_list += sub_procs
+    log(f"subscribers spawned: {sub_procs}")
+
+    return pid_list
+
+
 def pub_sub_1_to_1_fwd(pid_list : List[subprocess.Popen]) -> List[subprocess.Popen]:
     return pub_sub_1_to_1(pid_list, host_shift=1)
 
