@@ -14,7 +14,7 @@
         if [[ ! -f "/tmp/{{ item }}.tar.gz" || {{ force }} = yes ]]; then
           echo downloading...
           # aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz
-          wget -L https://github.com/thalesmg/turma/releases/download/0.1.0-beta.4/{{ item }}-0.1.0-arm64.tar.gz -O /tmp/{{ item }}.tar.gz
+          wget -L https://github.com/thalesmg/turma/releases/download/0.1.0-beta.5/{{ item }}-0.1.0-arm64.tar.gz -O /tmp/{{ item }}.tar.gz
         else
           echo skipping...
         fi
@@ -31,7 +31,7 @@
         if [[ ! -f "/tmp/{{ item }}.tar.gz" || {{ force }} = yes ]]; then
           echo downloading...
           # aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz
-          wget -L https://github.com/thalesmg/turma/releases/download/0.1.0-beta.4/{{ item }}-0.1.0-arm64.tar.gz -O /tmp/{{ item }}.tar.gz
+          wget -L https://github.com/thalesmg/turma/releases/download/0.1.0-beta.5/{{ item }}-0.1.0-arm64.tar.gz -O /tmp/{{ item }}.tar.gz
         else
           echo skipping...
         fi
