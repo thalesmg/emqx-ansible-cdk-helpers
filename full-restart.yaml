@@ -1,12 +1,5 @@
 ---
 
-- name: define hosts
-  hosts: localhost
-  gather_facts: no
-  tags: [start_cores,start_replicants]
-  roles:
-    - define_inventory
-
 - name: stop emqx and clean logs
   hosts: emqx
   become: yes
