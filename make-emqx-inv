@@ -2,8 +2,8 @@
 ;; -*- mode: clojure; -*-
 
 (let [[bastion-ip num-emqx num-cores num-lg] *command-line-args*
-      emqxs (map #(str "emqx-" % ".int.thalesmg") (range (Integer/parseInt num-emqx)))
-      loadgens (map #(str "loadgen-" % ".int.thalesmg") (range (Integer/parseInt num-lg)))
+      emqxs (map #(str "emqx-" % ".int.thales") (range (Integer/parseInt num-emqx)))
+      loadgens (map #(str "loadgen-" % ".int.thales") (range (Integer/parseInt num-lg)))
       make-line (fn [emqx]
                   (str "ssh"
                        " -o StrictHostKeyChecking=no"
