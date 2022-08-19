@@ -167,7 +167,7 @@ def params_for_lg(total_lg_num : int, num_targets : int,
     }
 
 
-def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
+def spawn_bench(lg_num: int, proc_num : int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
                 start_n : int = START_N, num_conns : int = NUM_CONNS,
                 conn_rate : int = CONN_RATE) -> subprocess.Popen:
     cwd = "/root/emqtt-bench/"
@@ -225,7 +225,7 @@ def spawn_bench(i: int, bench_cmd : BenchCmd, topic : str, hosts : str, qos = 0,
             "-F", str(NUM_INFLIGHT),
             "--fuel", str(MAYBE_PUBLISH_FUEL),
         ]
-    outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{i}")
+    outfile_path = Path("/", "tmp", f"{RESULT_FILE}.{bench_cmd}.{lg_num}.{proc_num}")
     outfile = open(outfile_path, "w+")
     args_str = shlex.join([str(a) for a in args])
     outfile.writelines([f"# {args_str}\n\n"])
@@ -339,13 +339,13 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
     def spawn_subs():
         log("spawning subscribers...")
         sub_procs = [
-            spawn_bench(LG_NUM, "sub", topic = sub_topic, qos = SUB_QoS,
+            spawn_bench(LG_NUM, proc_n, "sub", topic = sub_topic, qos = SUB_QoS,
                         # start_n for this process
                         start_n = start_n,
                         num_conns = params["num_conns"], hosts = sub_targets,
                         conn_rate = params["conn_rate"],
                         )
-            for start_n in params["start_nums"][LG_NUM]
+            for (proc_n, start_n) in enumerate(params["start_nums"][LG_NUM])
         ]
         log(f"subscribers spawned: {sub_procs}")
         return sub_procs
@@ -354,13 +354,13 @@ def pub_sub_1_to_1(pid_list : List[subprocess.Popen],
         log("spawning publishers...")
         # shifting only the pubs
         pub_procs = [
-            spawn_bench(LG_NUM, "pub", topic = pub_topic, qos = PUB_QoS,
+            spawn_bench(LG_NUM, proc_n, "pub", topic = pub_topic, qos = PUB_QoS,
                         # start_n for this process
                         start_n = start_n,
                         num_conns = params["num_conns"], hosts = pub_targets,
                         conn_rate = params["conn_rate"],
                         )
-            for start_n in params["start_nums"][LG_NUM]
+            for (proc_n, start_n) in enumerate(params["start_nums"][LG_NUM])
         ]
         log(f"publishers spawned: {pub_procs}")
         log("warding off oom killer...")
@@ -407,13 +407,13 @@ def pub_sub_1_to_1_only_pubs(pid_list : List[subprocess.Popen]) -> List[subproce
     log("spawning publishers...")
     # shifting only the pubs
     pub_procs = [
-        spawn_bench(LG_NUM, "pub", topic = "bench/%i/test", qos = PUB_QoS,
+        spawn_bench(LG_NUM, proc_n, "pub", topic = "bench/%i/test", qos = PUB_QoS,
                     # start_n for this process
                     start_n = start_n,
                     num_conns = params["num_conns"], hosts = targets,
                     conn_rate = params["conn_rate"],
                     )
-        for start_n in params["start_nums"][LG_NUM]
+        for (proc_n, start_n) in enumerate(params["start_nums"][LG_NUM])
     ]
     pid_list += pub_procs
     log(f"publishers spawned: {pub_procs}")
@@ -438,13 +438,13 @@ def pub_sub_1_to_1_only_subs(pid_list : List[subprocess.Popen]) -> List[subproce
     log("spawning subscribers...")
     # shifting only the subs
     sub_procs = [
-        spawn_bench(LG_NUM, "sub", topic = "bench/%i/test", qos = SUB_QoS,
+        spawn_bench(LG_NUM, proc_n, "sub", topic = "bench/%i/test", qos = SUB_QoS,
                     # start_n for this process
                     start_n = start_n,
                     num_conns = params["num_conns"], hosts = targets,
                     conn_rate = params["conn_rate"],
                     )
-        for start_n in params["start_nums"][LG_NUM]
+        for (proc_n, start_n) in enumerate(params["start_nums"][LG_NUM])
     ]
     pid_list += sub_procs
     log(f"subscribers spawned: {sub_procs}")
@@ -477,13 +477,13 @@ def sub_single_wildcard(pid_list : List[subprocess.Popen]) -> List[subprocess.Po
     num_targets = len(targets)
     params = params_for_lg(TOTAL_NUM_LG, num_targets, total_num_conns, conn_rate, NUM_PROCS)
     sub_procs = [
-        spawn_bench(LG_NUM, "sub", topic = "bench/test/#", qos = SUB_QoS,
+        spawn_bench(LG_NUM, proc_n, "sub", topic = "bench/test/#", qos = SUB_QoS,
                     # start_n for this process
                     start_n = start_n,
                     num_conns = params["num_conns"], hosts = targets,
                     conn_rate = params["conn_rate"],
                     )
-        for start_n in params["start_nums"][LG_NUM]
+        for (proc_n, start_n) in enumerate(params["start_nums"][LG_NUM])
     ]
     pid_list += sub_procs
     log(f"spawned subscribers: {pid_list}")
