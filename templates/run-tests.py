@@ -263,8 +263,8 @@ def emqttb_pubsub_fwd(hosts : str, qos = 0,
         "--num-clients", str(num_conns),
         "--conninterval", f"{conn_interval}us",
         "--pubinterval", f"{PUB_INTERVAL_MS}ms",
-        "--sub-qos", str(qos),
-        "--pub-qos", str(qos),
+        "--sub-qos", str(SUB_QoS),
+        "--pub-qos", str(PUB_QoS),
         "--start-n", str(start_n),
     ]
     outfile_path = Path("/", "tmp", f"{RESULT_FILE}.pubsub_fwd")
