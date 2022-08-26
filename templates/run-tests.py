@@ -152,6 +152,7 @@ def params_for_lg(total_lg_num : int, num_targets : int,
     conns_per_target_lg = conns_per_lg // num_targets
     # might lose a few to keep it even.
     conns_per_lg = conns_per_target_lg * num_targets
+    conns_per_proc = conns_per_lg // num_procs
 
     conn_rate_per_lg = (desired_total_conn_rate // total_lg_num) // num_procs
     max_n_lg = total_lg_num * conns_per_lg
@@ -161,7 +162,7 @@ def params_for_lg(total_lg_num : int, num_targets : int,
         for (a_lg, b_lg) in partition_range(0, max_n_lg, total_lg_num)
     ]
     return {
-        "num_conns": conns_per_lg,
+        "num_conns": conns_per_proc,
         "conn_rate": conn_rate_per_lg,
         "start_nums": start_nums_per_lg,
     }
