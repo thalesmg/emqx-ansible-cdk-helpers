@@ -1,0 +1,20 @@
+---
+
+- name: stop legionarius if running
+  ignore_errors: yes
+  command: "/tmp/legionarius/bin/legionarius stop"
+- name: start legionarius
+  ignore_errors: yes
+  when: inventory_hostname != groups["loadgen"][0]
+  command: "/tmp/legionarius/bin/legionarius daemon_iex"
+
+# - name: stop decurio if running
+#   ignore_errors: yes
+#   when: inventory_hostname == groups["loadgen"][0]
+#   command: "/tmp/decurio/bin/decurio stop"
+# - name: start decurio
+#   ignore_errors: yes
+#   when: inventory_hostname == groups["loadgen"][0]
+#   command: "/tmp/decurio/bin/decurio daemon_iex"
+
+...

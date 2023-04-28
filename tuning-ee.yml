@@ -1,0 +1,140 @@
+---
+
+- name: define hosts
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - define_inventory
+
+- name: configure timezone
+  hosts: emqx:loadgen
+  become: yes
+  become_user: root
+  tags: [timezone]
+  roles:
+    - set_timezone
+
+- name: config emqx
+  hosts: emqx
+  become: yes
+  become_user: root
+  tasks:
+    - name: apply tuning to emqx | set kernel parameters
+      script: ./files/tuning-emqx.sh
+    - name: set db backend configs
+      block:
+        - name: set facts
+          set_fact:
+            emqx_db_role: "{{ 'core' if inventory_hostname in cores else 'replicant' }}"
+        - name: ensure etc directory
+          file:
+            path: /etc/emqx
+            state: directory
+        - name: include ad-hoc overrides
+          lineinfile:
+            path: "/etc/emqx/emqx.conf"
+            insertafter: EOF
+            regex: 'include /etc/emqx/ad-hoc-overrides\.conf'
+            line: 'include /etc/emqx/ad-hoc-overrides.conf'
+        - name: set ad-hoc-overrides.conf
+          template:
+            src: ad-hoc-overrides.conf.ee
+            dest: /etc/emqx/ad-hoc-overrides.conf
+          # notify:
+          #   - restart emqx
+          register: ad_hoc_override_update
+        - name: patch listeners.conf - tcp max conn
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.tcp\.external\.max_connections = '
+            line: 'listener.tcp.external.max_connections = 10240000'
+        - name: patch listeners.conf - tcp max conn rate
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.tcp\.external\.max_conn_rate = '
+            line: 'listener.tcp.external.max_conn_rate = 10000'
+        - name: patch listeners.conf - tcp acceptors
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.tcp\.external\.acceptors = '
+            line: 'listener.tcp.external.acceptors = 128'
+        - name: patch listeners.conf - ssl max conn
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.ssl\.external\.max_connections = '
+            line: 'listener.ssl.external.max_connections = 10240000'
+        - name: patch listeners.conf - ssl max conn rate
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.ssl\.external\.max_conn_rate = '
+            line: 'listener.ssl.external.max_conn_rate = 10000'
+        - name: patch listeners.conf - ssl acceptors
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.ssl\.external\.acceptors = '
+            line: 'listener.ssl.external.acceptors = 128'
+        - name: patch listeners.conf - ssl verify
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.ssl\.external\.verify = '
+            line: 'listener.ssl.external.verify = {{ emqx_server_ssl_verify | default("verify_none") }}'
+        - name: patch listeners.conf - ssl cacertfile
+          lineinfile:
+            path: /etc/emqx/listeners.conf
+            regex: '^#* *listener\.ssl\.external\.cacertfile = '
+            line: 'listener.ssl.external.cacertfile = /etc/emqx/certs/cacert.pem'
+        - name: patch emqx.conf - node.max_ports
+          lineinfile:
+            path: /etc/emqx/emqx.conf
+            regex: '^#* *node\.max_ports = '
+            line: 'node.max_ports = 134217727'
+      when: emqx_db_backend is defined and emqx_num_cores is defined
+      vars:
+        cores: "{{ groups['emqx'][0:(emqx_num_cores | int)] }}"
+        replicants: "{{ groups['emqx'][(emqx_num_cores | int):] }}"
+    - name: increase LimitNOFILE in emqx.service
+      lineinfile:
+        path: "/lib/systemd/system/emqx.service"
+        regexp: "^LimitNOFILE"
+        line: "LimitNOFILE=1000000000"
+      # notify:
+      #   - restart emqx
+    - name: increase max number of erlang ports in vm.args
+      lineinfile:
+        path: "/etc/emqx/vm.args"
+        regexp: "^\\+Q +[0-9]+"
+        line: "+Q 134217727"
+    - name: set idle timeout / hibernation
+      lineinfile:
+        path: "/etc/emqx/zones.conf"
+        regex: "^#* *zone\\.external\\.idle_timeout ="
+        line: 'zone.external.idle_timeout = {{ emqtt_bench_idle_timeout | default("15s") }}'
+    - name: set force gc policy
+      lineinfile:
+        path: "/etc/emqx/zones.conf"
+        regex: "^#* *zone\\.external\\.force_gc_policy ="
+        line: 'zone.external.force_gc_policy = {{ emqtt_bench_force_gc_policy | default("16000|16MB") }}'
+    - name: set global gc interval
+      lineinfile:
+        path: "/etc/emqx/emqx.conf"
+        regex: "^#* *node\\.global_gc_interval ="
+        line: 'node.global_gc_interval = {{ emqtt_bench_global_gc_interval | default("15m") }}'
+  # handlers:
+  #   - name: restart emqx
+  #     systemd:
+  #       name: emqx
+  #       state: restarted
+  #       # state: reloaded
+  #       daemon_reload: yes
+
+# - name: apply tuning to loadgen
+#   hosts: loadgen
+#   become: yes
+#   become_user: root
+#   tasks:
+#     - name: set kernel parameters
+#       script: ./files/tuning-loadgen.sh
+
+- import_playbook: full-restart.yaml
+
+...

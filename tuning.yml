@@ -1,10 +1,18 @@
 ---
 
-- name: define hosts
-  hosts: localhost
-  gather_facts: no
+# - name: define hosts
+#   hosts: localhost
+#   gather_facts: no
+#   roles:
+#     - define_inventory
+
+- name: configure timezone
+  hosts: emqx:loadgen
+  become: yes
+  become_user: root
+  tags: [timezone]
   roles:
-    - define_inventory
+    - set_timezone
 
 - name: config emqx
   hosts: emqx
@@ -40,11 +48,11 @@
           # notify:
           #   - restart emqx
           register: ad_hoc_override_update
-        - name: stop emqx
-          systemd:
-            name: emqx
-            state: stopped
-          when: ad_hoc_override_update.changed
+        # - name: stop emqx
+        #   systemd:
+        #     name: emqx
+        #     state: stopped
+        #   when: ad_hoc_override_update.changed
         # - name: increase zdbbl (:dist_buf_busy_limit)
         #   lineinfile:
         #     path: "/etc/emqx/vm.args"
@@ -109,6 +117,41 @@
     #   pip:
     #     name: psutil
     #     state: present
+    # - name: disable docker and conntrack
+    #   systemd:
+    #     name: docker.service
+    #     state: stopped
+    #     enabled: false
+    #     force: true
+    #   register: docker_systemd1
+    # - name: disable docker and conntrack (socket)
+    #   systemd:
+    #     name: docker.socket
+    #     state: stopped
+    #     enabled: false
+    #     force: true
+    #   register: docker_systemd2
+    # - debug:
+    #     var: docker_systemd1
+    # - debug:
+    #     var: docker_systemd2
+    # - name: rm conntrack modules
+    #   modprobe:
+    #     name: "{{ item }}"
+    #     state: absent
+    #   loop:
+    #     - xt_conntrack
+    #     - nf_conntrack_netlink
+    #     # - nfnetlink
+    #     - nf_conntrack
+    #     # - nf_defrag_ipv6
+    #     # - nf_defrag_ipv4
+    #     # - libcrc32c
+    #     # - x_tables
+    # - name: reboot machine
+    #   when: docker_systemd.changed
+    #   reboot:
+    #     reboot_timeout: 180
   handlers:
     - name: restart emqx
       systemd:

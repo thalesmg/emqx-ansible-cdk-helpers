@@ -7,6 +7,6 @@
 - name: clear syslog
   shell: "echo > /var/log/syslog"
 
-- name: clear mem ets dumps
-  shell: "rm /tmp/*_mem-ets-dump.txt"
-  ignore_errors: yes
+# - name: clear mem ets dumps
+#   shell: "rm /tmp/*_mem-ets-dump.txt"
+#   ignore_errors: yes

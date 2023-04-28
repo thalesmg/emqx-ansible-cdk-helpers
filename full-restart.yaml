@@ -1,11 +1,5 @@
 ---
 
-- name: define hosts
-  hosts: localhost
-  gather_facts: no
-  roles:
-    - define_inventory
-
 - name: stop emqx and clean logs
   hosts: emqx
   become: yes
@@ -14,10 +8,22 @@
     - stop_emqx
     - clean_logs
 
+- name: clean loadgen bench logs
+  hosts: loadgen
+  become: yes
+  become_user: root
+  gather_facts: no
+  tasks:
+    - name: remove stdout logs
+      shell: "rm /tmp/*.?ub.* || true"
+      ignore_errors: yes
+
 - name: start cores
   hosts: cores
   become: yes
   become_user: root
+  gather_facts: no
+  tags: [start_cores]
   roles:
     - start_emqx
 
@@ -25,6 +31,8 @@
   hosts: replicants
   become: yes
   become_user: root
+  gather_facts: no
+  tags: [start_replicants]
   roles:
     - start_emqx
 

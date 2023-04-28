@@ -8,6 +8,9 @@ set -eu
   # echo 1000000000 > /proc/sys/fs/nr_open
   # ulimit -n 1000000000
 
+  # avoid OOM kill overcommit
+  sysctl -w vm.overcommit_memory=2
+
   # William's config
   sysctl -w net.core.rmem_default=262144000
   sysctl -w net.core.wmem_default=262144000

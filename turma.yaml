@@ -1,0 +1,80 @@
+---
+
+- hosts: emqx:loadgen
+  tasks:
+    - name: create dirs
+      file:
+        path: "/tmp/{{ item }}"
+        state: directory
+      loop:
+        - decurio
+        - legionarius
+    - name: download legionarius
+      shell: |
+        if [[ ! -f "/tmp/{{ item }}.tar.gz" || {{ force }} = yes ]]; then
+          echo downloading...
+          # aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz
+          wget -L https://github.com/thalesmg/turma/releases/download/0.1.0-beta.5/{{ item }}-0.1.0-arm64.tar.gz -O /tmp/{{ item }}.tar.gz
+        else
+          echo skipping...
+        fi
+      args:
+        executable: /usr/bin/bash
+      vars:
+        force: "{{ turma_download_force | default('no') }}"
+      loop:
+        - legionarius
+      register: download_res
+    - name: download decurio
+      when: inventory_hostname == groups["loadgen"][0]
+      shell: |
+        if [[ ! -f "/tmp/{{ item }}.tar.gz" || {{ force }} = yes ]]; then
+          echo downloading...
+          # aws s3 cp s3://emqx-cdk-cluster/thales/100m-tests/packages/{{ item }}.tar.gz /tmp/{{ item }}.tar.gz
+          wget -L https://github.com/thalesmg/turma/releases/download/0.1.0-beta.5/{{ item }}-0.1.0-arm64.tar.gz -O /tmp/{{ item }}.tar.gz
+        else
+          echo skipping...
+        fi
+      args:
+        executable: /usr/bin/bash
+      vars:
+        force: "{{ turma_download_force | default('no') }}"
+      loop:
+        - decurio
+    - name: uncompress legionarius
+      unarchive:
+        src: "/tmp/{{ item }}.tar.gz"
+        dest: "/tmp/{{ item }}/"
+        remote_src: yes
+      loop:
+        - legionarius
+    - name: uncompress decurio
+      when: inventory_hostname == groups["loadgen"][0]
+      unarchive:
+        src: "/tmp/{{ item }}.tar.gz"
+        dest: "/tmp/{{ item }}/"
+        remote_src: yes
+      loop:
+        - decurio
+    - name: set config (legionarius)
+      template:
+        src: turma-runtime.exs
+        dest: "/tmp/{{ item }}/etc/runtime.exs"
+      loop:
+        - legionarius
+    - name: set config (decurio)
+      when: inventory_hostname == groups["loadgen"][0]
+      template:
+        src: turma-runtime.exs
+        dest: "/tmp/{{ item }}/etc/runtime.exs"
+      loop:
+        - decurio
+
+- hosts: emqx:loadgen
+  become: yes
+  become_user: root
+  gather_facts: no
+  roles:
+    - restart_turma
+
+...

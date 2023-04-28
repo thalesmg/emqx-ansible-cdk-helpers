@@ -1,0 +1,9 @@
+---
+
+- hosts: emqx:loadgen
+  become: yes
+  become_user: root
+  roles:
+    - restart_turma
+
+...

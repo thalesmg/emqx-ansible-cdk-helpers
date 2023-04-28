@@ -1,0 +1,26 @@
+---
+
+- name: set /etc/timezone contents
+  copy:
+    content: "{{ script_timezone | default('America/Sao_Paulo') }}"
+    dest: "/etc/timezone"
+    mode: 0644
+    owner: root
+    group: root
+    backup: yes
+  # notify: update_timezone
+
+- name: set /etc/localtime link
+  file:
+    state: link
+    src: "/usr/share/zoneinfo/{{ script_timezone | default('America/Sao_Paulo') }}"
+    dest: "/etc/localtime"
+    mode: 0777
+    owner: root
+    group: root
+  # notify: update_timezone
+
+- name: restart time services
+  include_tasks: ./restart_services.yml
+
+...

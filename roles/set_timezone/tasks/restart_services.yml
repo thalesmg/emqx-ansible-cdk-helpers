@@ -1,0 +1,9 @@
+---
+
+- name: dpkg reconfigure tzdata
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+
+- name: restart syslog
+  command: service rsyslog restart
+
+...

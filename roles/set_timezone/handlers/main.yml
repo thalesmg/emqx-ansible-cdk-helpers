@@ -1,0 +1,6 @@
+---
+
+- name: update_timezone
+  include_tasks: ../tasks/restart_services.yml
+
+...

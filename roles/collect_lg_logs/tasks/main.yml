@@ -1,0 +1,27 @@
+---
+
+- name: ensure local tmp data dir
+  delegate_to: localhost
+  become: no
+  run_once: yes
+  file:
+    path: "./tmp/data"
+    state: directory
+- name: output?
+  find:
+    paths: "/tmp/"
+    patterns:
+      - "{{ emqx_script_result_file }}.pub.{{ loadgen_num }}"
+      - "{{ emqx_script_result_file }}.sub.{{ loadgen_num }}"
+  register: output_stat
+- name: fetch output
+  when: output_stat.files
+  fetch:
+    src: "{{ item.path }}"
+    dest: "./tmp/data/{{ emqx_script_result_file }}/{{ item.path | basename }}"
+    flat: yes
+  loop: "{{ output_stat.files }}"
+  timeout: 60
+  ignore_errors: yes
+
+...
